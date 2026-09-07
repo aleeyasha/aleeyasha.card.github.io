@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Notion">
+    
+    <title>Notion</title>
+    
+    <!-- Dynamic Favicon & PWA Links -->
+    <link id="favicon" rel="icon" type="image/svg+xml">
+    <link id="apple-touch-icon" rel="apple-touch-icon">
+    <link id="manifest" rel="manifest">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <!-- LocalForage for IndexedDB Storage -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700;900&family=DM+Serif+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/harmonyos/HarmonyOS_Sans.css">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = { darkMode: 'class', }
+    </script>
+
+    <style>
+        :root {
+            --theme-color: #51b8cb;
+            --theme-blend: #ffffff;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #e8f6f8; 
+            color: #222222; 
+            overflow-x: hidden; 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+        }
+        .dark body { 
+            background-color: #000000; 
+            color: #f1f1f1; 
+        }
+        
+        .theme-blend-bg-card { background-color: var(--theme-blend, #ffffff) !important; }
+        .theme-blend-bg { background-color: var(--theme-blend, #ffffff) !important; }
+        .dark .theme-blend-bg { background-color: #1a1a1a !important; }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        
+        input, textarea, select { 
+            background-color: #FFFFFF !important; 
+            border-color: #d0ebf0 !important; 
+            color: #222222 !important; 
+            transition: all 0.3s ease !important; 
+        }
+        .dark input, .dark textarea, .dark select { 
+            background-color: #111 !important; 
+            border-color: #333 !important; 
+            color: #eee !important; 
+        }
+        input:focus, textarea:focus, select:focus { 
+            border-color: var(--theme-color) !important; 
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05) !important; 
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--theme-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { opacity: 0.8; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { 
+            width: 100%; height: 6px; cursor: pointer; background: #d0ebf0; border-radius: 3px; 
+        }
+        .dark input[type=range]::-webkit-slider-runnable-track { background: #333; }
+        input[type=range]::-webkit-slider-thumb { 
+            height: 18px; width: 18px; border-radius: 50%; cursor: pointer; -webkit-appearance: none; margin-top: -6px; 
+        }
+
+        #inputHue { 
+            height: 12px; border-radius: 6px; 
+            background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); 
+            margin: 15px 0; 
+        }
+        #inputHue::-webkit-slider-runnable-track { background: transparent; height: 12px; }
+        #inputHue::-webkit-slider-thumb { 
+            height: 20px; width: 20px; border-radius: 50%; background: white; 
+            border: 3px solid var(--theme-color, #51b8cb); box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            cursor: pointer; -webkit-appearance: none; margin-top: -4px; 
+        }
+
+        #colorMap { 
+            width: 100%; height: 200px; position: relative; cursor: crosshair; 
+            border-radius: 12px; overflow: hidden; background-color: red; border: 1px solid #d0ebf0; 
+        }
+        .dark #colorMap { border-color: #333; }
+        .color-map-white { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, #fff, rgba(255,255,255,0)); }
+        .color-map-black { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, #000, rgba(0,0,0,0)); }
+        #colorMarker { 
+            position: absolute; width: 16px; height: 16px; border: 3px solid white; 
+            border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.2); 
+            pointer-events: none; transform: translate(-50%, -50%); 
+        }
+
+        #cardContainer { 
+            backface-visibility: hidden; -webkit-font-smoothing: antialiased; 
+            margin: 0 auto; transition: all 0.3s ease; 
+        }
+        
+        .dropdown-item { 
+            padding: 10px 16px; cursor: pointer; font-size: 11px; font-weight: 600; 
+            transition: all 0.2s; border-radius: 8px; margin: 0 4px; 
+        }
+        .dropdown-item:hover { background-color: #e8f6f8; color: #51b8cb; }
+        .dark .dropdown-item:hover { background-color: #333; }
+
+        .resizable-img { 
+            cursor: ew-resize; user-select: none; -webkit-user-drag: none; transition: box-shadow 0.2s ease; 
+        }
+        .resizable-img:active { cursor: ew-resize; box-shadow: 0 0 0 4px rgba(172, 135, 102, 0.3); }
+        
+        /* Hand-drawn typography & Lists reset */
+        #cardWord, #cardDef, .card-extra-def-input, #cardType { font-family: 'Caveat', cursive !important; }
+        #cardDef, .card-extra-def-input { tab-size: 4; -moz-tab-size: 4; }
+        .handdrawn-title { font-family: 'Caveat', cursive !important; }
+        
+        #cardWord ul, #cardDef ul, .card-extra-def-input ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.25rem; }
+        #cardWord ol, #cardDef ol, .card-extra-def-input ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.25rem; }
+        #cardWord li, #cardDef li, .card-extra-def-input li { margin-bottom: 0.25rem; }
+
+        /* ContentEditable Placeholder Styling */
+        [contenteditable]:empty:before {
+            content: attr(data-placeholder); color: inherit; opacity: 0.4; pointer-events: none; display: block;
+        }
+
+        /* Image Editor Toolbar Styles */
+        .ed-tool-btn.active {
+            color: var(--theme-color) !important;
+            background-color: rgba(255,255,255,0.2) !important;
+            border-color: var(--theme-color) !important;
+        }
+        
+        .is-editing > div[class*="absolute"], .is-editing > button { 
+            display: none !important; 
+        }
+
+        /* No-scroll & Touch optimization for Editor Canvas */
+        .editor-canvas-layer {
+            touch-action: none !important;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    </style>
+    <style id="dynamic-card-styles"></style>
+</head>
+<body class="relative min-h-screen p-0 m-0 overflow-hidden">
+
+    <input type="hidden" id="inputTitle" value="">
+    <textarea id="inputDef" class="hidden"></textarea>
+    <input type="file" id="imageInput" class="hidden" accept="image/*" multiple>
+    <input type="file" id="fileImportInput" class="hidden" accept=".png, .pdf, .txt, .json">
+    <button id="btnInstallApp" class="hidden"></button>
+
+    <!-- Mobile FAB for Context Menu -->
+    <button id="mobileFab" onclick="toggleMobileMenu(event)" class="fixed z-[150] bg-[var(--theme-color)] text-white w-10 h-10 rounded-full shadow-xl flex items-center justify-center outline-none hover:scale-110 transition-transform duration-300" aria-label="Open Menu" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: max(1.5rem, env(safe-area-inset-right));">
+        <i data-lucide="menu" class="w-4 h-4"></i>
+    </button>
+
+    <div id="mainLayout" class="relative z-10 w-full flex flex-col items-center h-screen overflow-y-auto custom-scrollbar" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);">
+        
+        <main class="w-full flex justify-center flex-1">
+            
+            <div id="cardContainer" class="border-[4px] md:border-[4px] border-[var(--theme-color)] relative transition-all duration-500 w-full min-h-screen group/maincard theme-blend-bg-card">
+
+                    <div class="pt-6 md:pt-10 px-6 md:px-20 pb-8 md:pb-20 group/card flex flex-col h-full max-w-[1400px] mx-auto">
+                        
+                        <div id="cardTitleRestore" onclick="restoreTitle()" class="hidden cursor-pointer py-2 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl border-2 border-dashed border-transparent hover:border-[var(--theme-color)] dark:hover:border-[#333] text-center text-gray-400 hover:text-[var(--theme-color)] opacity-100 lg:opacity-0 lg:group-hover/card:opacity-100 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> <span class="text-[10px] font-bold uppercase tracking-[0.2em]">Add Title / Category</span>
+                        </div>
+
+                        <div id="cardTitleSection" class="group/title relative flex items-center flex-wrap gap-2 md:gap-4 py-1 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                            
+                            <!-- Animated Text Toolbar -->
+                            <div class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-end md:justify-center items-center p-1 gap-1 w-max max-w-[calc(100vw-5.5rem)] md:max-w-none opacity-0 pointer-events-none group-focus-within/title:opacity-100 group-focus-within/title:pointer-events-auto transition-all duration-200 z-[150] origin-bottom-right scale-90 group-focus-within/title:scale-100" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);">
+                                <div class="relative">
+                                    <button id="toolbarTitleSizeBtn" onmousedown="event.preventDefault();" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors flex items-center gap-1 text-[11px] font-bold min-w-[40px] justify-center" aria-label="Font Size">
+                                        <span id="toolbarTitleSizeLabel">32</span>
+                                        <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                    </button>
+                                    <div id="toolbarTitleSizeDropdownMenu" onmousedown="event.preventDefault();" class="hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent border border-[#d0ebf0] rounded-xl shadow-xl z-[60] overflow-hidden w-16 max-h-48 overflow-y-auto custom-scrollbar"></div>
+                                </div>
+                                <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                <button onmousedown="event.preventDefault(); execFormat('selectAll')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-selectall" aria-label="Select All" title="Select All"><i data-lucide="scan-text" class="w-4 h-4"></i></button>
+                                <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                <button onmousedown="event.preventDefault(); execFormat('justifyLeft')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-left" aria-label="Align Left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+                                <button onmousedown="event.preventDefault(); execFormat('justifyCenter')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-center" aria-label="Align Center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+                                <button onmousedown="event.preventDefault(); execFormat('justifyRight')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-right" aria-label="Align Right"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+                                <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                <div class="flex items-center gap-1 text-gray-700 px-1" title="Word Count">
+                                    <i data-lucide="whole-word" class="w-3.5 h-3.5"></i>
+                                    <span class="text-[10px] font-bold toolbar-word-count">0</span>
+                                </div>
+                            </div>
+
+                            <h2 id="cardWord" contenteditable="true" data-placeholder="Enter Term / Title..." class="font-bold tracking-tight leading-tight outline-none flex-1 min-w-[50%]" style="text-decoration: none;"></h2>
+                            <span id="cardType" contenteditable="true" data-placeholder="Category..." class="text-sm md:text-xl font-bold px-3 py-1 md:px-4 md:py-1 rounded-none outline-none min-w-[80px] empty:min-w-[100px]"></span>
+                            
+                            <button onmousedown="event.preventDefault(); clearTitle()" class="clear-btn absolute top-1/2 -translate-y-1/2 right-2 md:right-4 p-1.5 md:p-2 bg-transparent shadow-sm rounded-full text-gray-400 hover:text-red-500 opacity-100 lg:opacity-0 lg:group-hover/title:opacity-100 transition-opacity z-10 border border-gray-100 dark:border-[#333]" aria-label="Remove Title Section">
+                                <i data-lucide="x" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="cardContent" class="space-y-0 mt-1 flex-1">
+                            <div id="cardDefRestore" onclick="restoreDef()" class="hidden cursor-pointer py-2 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl border-2 border-dashed border-transparent hover:border-[var(--theme-color)] dark:hover:border-[#333] text-center text-gray-400 hover:text-[var(--theme-color)] opacity-100 lg:opacity-0 lg:group-hover/card:opacity-100 transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="plus" class="w-4 h-4"></i> <span class="text-[10px] font-bold uppercase tracking-[0.2em]">Add Notes</span>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row gap-4 w-full" id="inlineNotesRow">
+                                <div id="cardNotesSection" class="flex-1 group/def relative py-1 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                    <div class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-end md:justify-center items-center p-1 gap-1 w-max max-w-[calc(100vw-5.5rem)] md:max-w-none opacity-0 pointer-events-none group-focus-within/def:opacity-100 group-focus-within/def:pointer-events-auto transition-all duration-200 z-[150] origin-bottom-right scale-90 group-focus-within/def:scale-100" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);">
+                                        <button onmousedown="event.preventDefault(); execFormat('undo')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Undo"><i data-lucide="undo" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); execFormat('redo')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Redo"><i data-lucide="redo" class="w-4 h-4"></i></button>
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onmousedown="event.preventDefault(); execFormat('selectAll')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-selectall" aria-label="Select All" title="Select All"><i data-lucide="scan-text" class="w-4 h-4"></i></button>
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-bold" aria-label="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-underline" aria-label="Underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                                        
+                                        <div class="relative group/highlightpicker">
+                                            <button onmousedown="event.preventDefault(); toggleHighlightColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-highlight" aria-label="Highlight Color"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+                                            <div class="highlight-color-menu hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent border border-[#d0ebf0] p-2 flex flex-wrap gap-1.5 rounded-xl shadow-xl z-[60] w-[165px]" onmousedown="event.preventDefault(); event.stopPropagation();" onclick="event.stopPropagation();">
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('transparent')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform flex items-center justify-center bg-gray-100 dark:bg-gray-800" style="border: 1px solid rgba(0,0,0,0.1);"><i data-lucide="x" class="w-3 h-3 text-gray-500"></i></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor(activeColor)" class="dynamic-theme-color-swatch w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform opacity-60" style="background-color: #51b8cb; border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#ef4444')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-red-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#f97316')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-orange-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#f59e0b')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-yellow-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#84cc16')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-lime-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#10b981')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-emerald-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#06b6d4')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-cyan-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#3b82f6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-blue-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyHighlightColor('#8b5cf6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-violet-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="relative group/colorpicker">
+                                            <button onmousedown="event.preventDefault(); toggleTextColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-color" aria-label="Text Color"><i data-lucide="palette" class="w-4 h-4"></i></button>
+                                            <div class="text-color-menu hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent border border-[#d0ebf0] p-2 flex flex-wrap gap-1.5 rounded-xl shadow-xl z-[60] w-[165px]" onmousedown="event.preventDefault(); event.stopPropagation();" onclick="event.stopPropagation();">
+                                                <div onmousedown="event.preventDefault(); applyTextColor(activeColor)" class="dynamic-theme-color-swatch w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform" style="background-color: #51b8cb; border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#ef4444')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-red-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#f97316')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-orange-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#f59e0b')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-yellow-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#84cc16')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-lime-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#10b981')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-emerald-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#06b6d4')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-cyan-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#3b82f6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-blue-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#8b5cf6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-violet-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                                <div onmousedown="event.preventDefault(); applyTextColor('#222222')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-gray-900" style="border: 1px solid rgba(60,60,60,1.1);"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onmousedown="event.preventDefault(); execFormat('justifyLeft')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-left" aria-label="Align Left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); execFormat('justifyCenter')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-center" aria-label="Align Center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); execFormat('justifyRight')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-right" aria-label="Align Right"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+                                        
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onmousedown="event.preventDefault(); execFormat('insertUnorderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ul" aria-label="Bullet List"><i data-lucide="list" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); execFormat('insertOrderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ol" aria-label="Ordered List"><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); sortSelectedTextAZ()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Sort A-Z" title="Sort A-Z"><i data-lucide="arrow-down-a-z" class="w-4 h-4"></i></button>
+
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onmousedown="event.preventDefault(); copyNoteText(event, 'cardDef')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Copy Text" title="Copy Text"><i data-lucide="copy" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); downloadNoteText('cardDef')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Download .txt" title="Download .txt"><i data-lucide="file-down" class="w-4 h-4"></i></button>
+                                        
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onclick="event.preventDefault(); toggleSpeechToText('cardDef', false, this)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Dictate" title="Dictate"><i data-lucide="mic" class="w-4 h-4"></i></button>
+                                        
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <button onmousedown="event.preventDefault(); addPrimaryNote('next')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Add Note Next To" title="Add Note Next To"><i data-lucide="panel-right" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); addPrimaryNote('below')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Add Note Below" title="Add Note Below"><i data-lucide="panel-bottom" class="w-4 h-4"></i></button>
+
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <div class="relative">
+                                            <button id="toolbarDefSizeBtn" onmousedown="event.preventDefault();" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors flex items-center gap-1 text-[11px] font-bold min-w-[40px] justify-center" aria-label="Font Size">
+                                                <span id="toolbarDefSizeLabel">24</span>
+                                                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                            </button>
+                                            <div id="toolbarDefSizeDropdownMenu" onmousedown="event.preventDefault();" class="hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent rounded-xl shadow-xl z-[60] overflow-hidden w-16 max-h-48 overflow-y-auto custom-scrollbar"></div>
+                                        </div>
+                                        
+                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <div class="flex items-center gap-1 text-gray-700 px-1" title="Word Count">
+                                            <i data-lucide="whole-word" class="w-3.5 h-3.5"></i>
+                                            <span class="text-[10px] font-bold toolbar-word-count">0</span>
+                                        </div>
+                                    </div>
+                                    <div id="cardDef" contenteditable="true" data-placeholder="Enter definition or notes..." class="font-medium leading-relaxed whitespace-pre-wrap outline-none" style="text-decoration: none; min-height: 1.5em;"></div>
+                                    <button onmousedown="event.preventDefault(); clearDef()" class="clear-btn absolute top-1/2 -translate-y-1/2 right-2 md:right-4 p-1.5 md:p-2 bg-transparent shadow-sm rounded-full text-gray-400 hover:text-red-500 opacity-100 lg:opacity-0 lg:group-hover/def:opacity-100 transition-opacity z-10 border border-gray-100 dark:border-[#333]" aria-label="Remove Notes Section">
+                                        <i data-lucide="x" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                                    </button>
+                                </div>
+                                <div id="inlineExtraNotesContainer" class="flex flex-col md:flex-row gap-4 flex-1 empty:hidden"></div>
+                            </div>
+                            
+                            <div id="cardImagesContainer" class="flex flex-wrap gap-4 md:gap-9 w-full justify-center mt-2" style="padding-top: 0px;"></div>
+                            <div id="cardBlocksContainer" class="w-full flex flex-col gap-2 mt-2"></div>
+                            
+                            <div class="flex flex-col sm:flex-row gap-2 mt-3 w-full hidden-in-export opacity-100 lg:opacity-0 lg:group-hover/card:opacity-100 transition-all">
+                                <div onclick="addExtraNote()" class="flex-1 cursor-pointer py-2 px-2 md:px-4 rounded-xl md:rounded-2xl border-2 border-dashed border-transparent hover:border-[var(--theme-color)] dark:hover:border-[#333] text-center text-gray-400 hover:text-[var(--theme-color)] transition-all flex items-center justify-center gap-2">
+                                    <i data-lucide="plus" class="w-4 h-4"></i> <span class="text-[10px] font-bold uppercase tracking-[0.2em]">Add Extra Note</span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    <!-- Inline Editor Floating Toolbar (Transparent & Enhanced) -->
+    <div id="floatingImageToolbar" class="hidden fixed bg-transparent border border-white/10 rounded-xl z-[200] flex flex-wrap justify-center items-center p-1.5 gap-1 w-[92vw] sm:w-[360px] md:w-max md:max-w-none origin-bottom-right transition-all duration-200 scale-90 opacity-0" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+        
+        <!-- Align Tools -->
+        <button onclick="cardImgAlign('left')" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" aria-label="Align Left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+        <button onclick="cardImgAlign('center')" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" aria-label="Align Center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+        <button onclick="cardImgAlign('right')" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" aria-label="Align Right"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+        
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+        
+        <!-- Border Dropdown -->
+        <div class="relative">
+            <button onclick="toggleEdMenu('borderMenu')" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg flex items-center gap-1 transition-colors outline-none"><i data-lucide="square" class="w-4 h-4"></i> <i data-lucide="chevron-up" class="w-3 h-3"></i></button>
+            <div id="borderMenu" class="hidden absolute bottom-full mb-2 left-0 mt-2 bg-transparent border border-gray-700 rounded-lg shadow-xl w-24 p-1 max-h-40 overflow-y-auto custom-scrollbar z-[210]"></div>
+        </div>
+
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+
+        <!-- Transform Tools -->
+        <button onclick="edRotate()" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" title="Rotate 90°"><i data-lucide="rotate-cw" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="crop" title="Crop"><i data-lucide="crop" class="w-4 h-4"></i></button>
+        <button onclick="edClearCanvas()" class="p-2 md:p-1.5 text-rose-400 hover:text-rose-400 hover:bg-black/10 rounded-lg transition-colors" title="Clear Drawings"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+
+        <!-- Draw Tools -->
+        <button class="ed-tool-btn active p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="pen" title="Pen"><i data-lucide="pen-tool" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="highlighter" title="Highlighter"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="eraser" title="Eraser"><i data-lucide="eraser" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="rect" title="Rectangle"><i data-lucide="square" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="circle" title="Circle"><i data-lucide="circle" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="arrow" title="Arrow"><i data-lucide="move-up-right" class="w-4 h-4"></i></button>
+
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+
+        <!-- Color & Size -->
+        <div class="relative">
+            <button onclick="toggleEdMenu('colorMenu')" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg flex items-center gap-1 transition-colors outline-none">
+                <div id="edCurrentColor" class="w-3.5 h-3.5 rounded-full border border-gray-400 shadow-sm" style="background-color: #ef4444;"></div>
+                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </button>
+            <div id="colorMenu" class="hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent border border-gray-700 rounded-xl shadow-xl w-[200px] p-3 z-[210] cursor-default" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+                <div class="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-2">Colors</div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition scale-110 border-white" style="background-color: #ef4444;" data-color="#ef4444"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #f59e0b;" data-color="#f59e0b"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #eab308;" data-color="#eab308"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #22c55e;" data-color="#22c55e"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #0ea5e9;" data-color="#0ea5e9"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #3b82f6;" data-color="#3b82f6"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #a855f7;" data-color="#a855f7"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #ec4899;" data-color="#ec4899"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #000000;" data-color="#000000"></button>
+                    <button class="ed-color-btn w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition" style="background-color: #ffffff;" data-color="#ffffff"></button>
+                </div>
+                <div class="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-2">Size</div>
+                <input type="range" id="edSizeSlider" min="1" max="50" value="5" class="w-full">
+            </div>
+        </div>
+
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+        
+        <button onclick="edUndo()" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" title="Undo"><i data-lucide="undo" class="w-4 h-4"></i></button>
+        <button onclick="edRedo()" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" title="Redo"><i data-lucide="redo" class="w-4 h-4"></i></button>
+
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+
+        <button onclick="closeInlineEditor(false)" class="p-2 md:p-1.5 text-rose-400 hover:text-rose-400 hover:bg-black/10 rounded-lg transition-colors" title="Cancel"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button onclick="saveInlineEditor()" class="p-2 md:p-1.5 text-emerald-400 hover:text-emerald-400 hover:bg-black/10 rounded-lg transition-colors" title="Save"><i data-lucide="check" class="w-4 h-4"></i></button>
+    </div>
+
+    <!-- Context / Floating Menu -->
+    <div id="floatingPreviewMenu" class="hidden flex fixed flex-col bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border border-[#d0ebf0] dark:border-[#333] shadow-[0_10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-2xl z-[200] overflow-hidden w-[280px] p-2 gap-1.5 transition-all origin-bottom-right">
+        
+        <!-- Top Toolbar (Export & Core Actions) -->
+        <div class="flex items-center justify-between bg-[#f4fbfc] dark:bg-[#222] rounded-xl p-1 border border-gray-100 dark:border-[#333]">
+            <button onclick="createCard()" oncontextmenu="event.preventDefault(); createCard(true);" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-[#e7f135] hover:text-[#51b8cb] shadow-sm" aria-label="New Card" title="New Card">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-0.5"></div>
+            
+            <button onclick="window.currentUser ? window.triggerGoogleLogout() : window.triggerGoogleLogin()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Account">
+                <i data-lucide="user" class="w-4 h-4"></i> <span id="authBtnText" class="text-[9px] font-bold hidden">Login</span>
+            </button>
+
+            <button onclick="document.getElementById('fileImportInput').click()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Import File"><i data-lucide="upload" class="w-4 h-4"></i></button>
+            <button id="cardDownloadBtnCtx" onclick="downloadPNG()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Download Image"><i data-lucide="image" class="w-4 h-4"></i></button>
+            <button id="cardDownloadPdfBtnCtx" onclick="downloadPDF()" oncontextmenu="event.preventDefault(); downloadPDF(true)" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Download PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
+            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-0.5"></div>
+            <!-- Theme Toggle Button -->
+            <button onclick="toggleDarkMode()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Theme Toggle">
+                <i data-lucide="moon" id="themeToggleIcon" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Cards List -->
+        <div id="headerCardsList" class="max-h-32 overflow-y-auto custom-scrollbar border border-gray-100 dark:border-[#333] rounded-xl bg-white dark:bg-[#1a1a1a]"></div>
+
+        <!-- Image Controls Row -->
+        <div class="flex items-center justify-between px-2 py-0.5">
+            <span class="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest">Images</span>
+            <div class="flex items-center gap-0.5">
+                <button onclick="document.getElementById('imageInput').click()" class="p-1.5 text-gray-500 hover:text-[var(--theme-color)] hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors" title="Add Image"><i data-lucide="image-plus" class="w-3.5 h-3.5"></i></button>
+                <button id="imageLayoutToggleBtn" class="p-1.5 text-gray-500 hover:text-[var(--theme-color)] hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors" title="Layout"><i data-lucide="layout-grid" class="w-3.5 h-3.5"></i></button>
+                <div class="w-px h-3 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                <button id="contextUndoImageBtn" onclick="event.stopPropagation(); undoImageAction(); window.closePreviewMenu();" class="p-1.5 text-gray-500 hover:text-[var(--theme-color)] hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors" title="Undo Image"><i data-lucide="undo" class="w-3.5 h-3.5"></i></button>
+                <button id="contextRedoImageBtn" onclick="event.stopPropagation(); redoImageAction(); window.closePreviewMenu();" class="p-1.5 text-gray-500 hover:text-[var(--theme-color)] hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors" title="Redo Image"><i data-lucide="redo" class="w-3.5 h-3.5"></i></button>
+            </div>
+        </div>
+        <div id="floatingLayoutOptions" class="hidden py-1 px-1 bg-black/5 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-[#333]"></div>
+
+        <!-- Sliders & Dropdowns Group -->
+        <div class="flex flex-col border border-gray-100 dark:border-[#333] rounded-xl bg-white dark:bg-[#1a1a1a] shadow-sm">
+            
+            <div class="px-3 py-2 flex justify-between items-center group">
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex-shrink-0">Border</span>
+                <div class="flex items-center gap-3 flex-1 ml-4">
+                    <input type="range" id="inputCardBorder" min="0" max="40" value="4" class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                    <span id="cardBorderValueLabel" class="text-[10px] font-bold text-[var(--theme-color)] w-6 text-right">4px</span>
+                </div>
+            </div>
+
+            <div class="h-px bg-gray-100 dark:bg-[#333] mx-2"></div>
+
+            <div id="categoryMenuBtn" class="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-[#f4fbfc] dark:hover:bg-[#222] transition-colors rounded-lg mx-0.5">
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-gray-600 dark:text-gray-300"><i data-lucide="tag" class="w-3.5 h-3.5"></i> Category</div>
+                <div class="flex items-center gap-1.5">
+                    <span id="categoryLabel" class="text-[10px] font-bold text-[var(--theme-color)] uppercase tracking-wider truncate max-w-[90px] text-right">-</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 transition-transform" id="categoryChevron"></i>
+                </div>
+            </div>
+            <div id="floatingCategoryOptions" class="hidden py-1 bg-black/5 dark:bg-white/5 mx-2 rounded-lg mb-1 max-h-32 overflow-y-auto custom-scrollbar border border-gray-100 dark:border-[#333]"></div>
+
+            <div class="h-px bg-gray-100 dark:bg-[#333] mx-2"></div>
+
+            <div id="fontFamilyToggleBtn" class="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-[#f4fbfc] dark:hover:bg-[#222] transition-colors rounded-lg mx-0.5">
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-gray-600 dark:text-gray-300"><i data-lucide="type" class="w-3.5 h-3.5"></i> Font</div>
+                <div class="flex items-center gap-1.5">
+                    <span id="fontFamilyLabel" class="text-[10px] font-bold text-[var(--theme-color)] uppercase tracking-wider truncate max-w-[90px] text-right">Caveat</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 transition-transform" id="fontFamilyChevron"></i>
+                </div>
+            </div>
+            <div id="floatingFontFamilyOptions" class="hidden py-1 bg-black/5 dark:bg-white/5 mx-2 rounded-lg mb-1 border border-gray-100 dark:border-[#333]"></div>
+
+            <div class="h-px bg-gray-100 dark:bg-[#333] mx-2"></div>
+
+            <div id="themeColorToggleBtn" class="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-[#f4fbfc] dark:hover:bg-[#222] transition-colors rounded-lg mx-0.5">
+                <div class="flex items-center gap-2 text-[11px] font-semibold text-gray-600 dark:text-gray-300"><i data-lucide="palette" class="w-3.5 h-3.5"></i> Theme Color</div>
+                <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 transition-transform" id="themeColorChevron"></i>
+            </div>
+            <div id="floatingThemeColorOptions" class="hidden p-2.5 bg-black/5 dark:bg-white/5 mx-2 rounded-lg mb-2 border border-gray-100 dark:border-[#333]">
+                <div class="flex justify-between items-center mb-2.5">
+                    <button id="btnRandomColor" class="p-1.5 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] text-gray-400 hover:text-[var(--theme-color)] rounded-lg transition-all shadow-sm"><i data-lucide="shuffle" class="w-3.5 h-3.5"></i></button>
+                    <div class="relative shrink-0 w-24">
+                        <button id="blendBtn" class="w-full px-2 py-1.5 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] text-[var(--theme-color)] text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm flex items-center justify-between gap-1 group">
+                            <span class="text-gray-400">Blend</span> <span id="blendValueLabel">20%</span>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
+                        </button>
+                        <div id="blendDropdownMenu" class="hidden absolute right-0 mt-2 w-full bg-white dark:bg-[#1a1a1a] border border-[#d0ebf0] dark:border-[#333] rounded-xl shadow-xl z-[70] overflow-hidden max-h-32 overflow-y-auto custom-scrollbar"><div id="blendOptions" class="py-1"></div></div>
+                    </div>
+                </div>
+                <div id="colorMap" class="h-24 w-full relative cursor-crosshair border border-gray-200 dark:border-[#333] rounded-xl overflow-hidden bg-red-500 mb-2.5">
+                    <div class="color-map-white absolute inset-0 bg-gradient-to-r from-white to-transparent"></div>
+                    <div class="color-map-black absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+                    <div id="colorMarker" class="absolute w-3 h-3 border-[2px] border-white rounded-full shadow-sm pointer-events-none transform -translate-x-1/2 -translate-y-1/2" style="top: 20%; left: 80%;"></div>
+                </div>
+                <input type="range" id="inputHue" min="0" max="360" value="189" class="w-full h-1.5 rounded-lg appearance-none cursor-pointer mb-1" style="background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Toast Message -->
+    <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-xl shadow-lg z-[999] transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium text-center"></div>
+
+    <script>
+        // Utils
+        function showToast(msg) {
+            let toast = document.getElementById('toast-msg');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            clearTimeout(toast.timeout);
+            toast.timeout = setTimeout(() => { toast.classList.add('opacity-0'); }, 3500);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Dark Mode Logic
+        let isDarkMode = localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        function applyTheme() {
+            const icon = document.getElementById('themeToggleIcon');
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                if(icon) icon.setAttribute('data-lucide', 'sun');
+            } else {
+                document.documentElement.classList.remove('dark');
+                if(icon) icon.setAttribute('data-lucide', 'moon');
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            applyTheme();
+        }
+
+        const categoryColors = {
+            "Principles of Flight": "#6366f1", "Meteorology": "#0ea5e9", "Navigation": "#10b981", "Flight Planning and Monitoring": "#f59e0b",
+            "Aircraft General Knowledge": "#475569", "Human Performance": "#f43f5e", "Air Law": "#8b5cf6", "Operational Procedures": "#06b6d4",
+            "Mass & Balance": "#f97316", "Performance": "#84cc16", "Communications": "#14b8a6"
+        };
+        
+        const fontMap = {
+            'Caveat': "'Caveat', cursive",
+            'Poppins': "'Poppins', sans-serif",
+            'DM Serif Display': "'DM Serif Display', serif"
+        };
+
+        let activeColor = "#51b8cb", hue = 189, saturation = 60, brightness = 80;
+        let uploadedImages = [], activeBlocks = []; 
+        let cards = [], activeCardId = null, isSwitching = false;
+        
+        let currentSelectedCategory = "-", currentSelectedSize = 32, currentSelectedDefSize = 24, currentSelectedExtraDefSize = 24;
+        let currentImageBorder = 2, currentImageCols = 0, currentBlendPercentage = 20, currentCardBorder = 4, deferredPrompt = null;
+        let currentFontFamily = 'Caveat';
+        let showTitlePlaceholder = true, showDefPlaceholder = true;
+        
+        let activeImageIdx = -1, activeBlockIdx = -1, activeImageIsGroup = false;
+        let isDraggingImage = false, dragStartX = 0, dragImageIdx = -1, dragIsGroup = false, dragBlockIdx = -1, dragStartScale = 100;
+        let dragWithCtrl = false, dragStartXOffset = 0;
+        
+        let imageUndoStack = [], imageRedoStack = [], isImageUndoingRedoing = false, stateBeforeDrag = null;
+        let recognition = null, isRecording = false, activeMicBtn = null;
+
+        window.closePreviewMenu = function() {
+            const menu = document.getElementById('floatingPreviewMenu');
+            if (!menu || menu.classList.contains('hidden')) return;
+            
+            menu.style.transform = "scale(0.95)";
+            menu.style.opacity = "0";
+            
+            setTimeout(() => {
+                menu.classList.add('hidden');
+                menu.style.transform = "";
+                menu.style.opacity = "";
+                
+                const layoutOptions = document.getElementById('floatingLayoutOptions');
+                if (layoutOptions) layoutOptions.classList.add('hidden');
+                const themeColorOptions = document.getElementById('floatingThemeColorOptions');
+                if (themeColorOptions) themeColorOptions.classList.add('hidden');
+                const fontOptions = document.getElementById('floatingFontFamilyOptions');
+                if (fontOptions) fontOptions.classList.add('hidden');
+                const catOptions = document.getElementById('floatingCategoryOptions');
+                if (catOptions) catOptions.classList.add('hidden');
+                
+                const themeChev = document.getElementById('themeColorChevron'); if(themeChev) themeChev.classList.remove('rotate-180');
+                const fontChev = document.getElementById('fontFamilyChevron'); if(fontChev) fontChev.classList.remove('rotate-180');
+                const catChev = document.getElementById('categoryChevron'); if(catChev) catChev.classList.remove('rotate-180');
+            }, 150);
+        };
+
+        window.toggleMobileMenu = function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const menu = document.getElementById('floatingPreviewMenu');
+            const fab = document.getElementById('mobileFab');
+            
+            if (menu.classList.contains('hidden') || menu.style.opacity === "0") {
+                menu.style.visibility = 'hidden';
+                menu.classList.remove('hidden');
+                
+                const fabRect = fab.getBoundingClientRect();
+                const menuRect = menu.getBoundingClientRect();
+                
+                let topPos = fabRect.bottom - menuRect.height;
+                let leftPos = fabRect.left - menuRect.width - 12;
+                
+                if (topPos < 10) topPos = 10;
+                if (leftPos < 10) leftPos = 10;
+                
+                menu.style.top = topPos + 'px';
+                menu.style.left = leftPos + 'px';
+                menu.style.transformOrigin = "bottom right";
+                
+                menu.style.transform = "scale(0.9)";
+                menu.style.opacity = "0";
+                
+                menu.style.visibility = 'visible';
+                
+                void menu.offsetWidth;
+                
+                menu.style.transition = "transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.15s ease-out";
+                menu.style.transform = "scale(1)";
+                menu.style.opacity = "1";
+            } else {
+                window.closePreviewMenu();
+            }
+        };
+
+        window.toggleHighlightColorMenu = function(e) {
+            e.stopPropagation();
+            const targetMenu = e.currentTarget.nextElementSibling;
+            const isHidden = targetMenu.classList.contains('hidden');
+            document.querySelectorAll('.text-color-menu, .highlight-color-menu').forEach(m => m.classList.add('hidden'));
+            if (isHidden) targetMenu.classList.remove('hidden');
+        };
+
+        window.applyHighlightColor = function(color) {
+            document.execCommand('styleWithCSS', false, true);
+            if (color === 'transparent') {
+                document.execCommand('hiliteColor', false, 'transparent');
+                removeStyleFromSelection('backgroundColor');
+            } else {
+                document.execCommand('hiliteColor', false, hexToRgba(color, 0.4));
+            }
+            document.querySelectorAll('.highlight-color-menu').forEach(m => m.classList.add('hidden'));
+            syncCardState();
+            checkFormatState();
+        };
+
+        window.toggleSpeechToText = function(targetIdx, isBlock, btnEl) {
+            if (isRecording) {
+                if (recognition) recognition.stop();
+                return;
+            }
+
+            const el = window.getNoteTextElement(targetIdx, isBlock);
+            if (!el) return;
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast("Your device does not support voice recognition.");
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            let handledResults = new Set();
+
+            recognition.onstart = function() {
+                isRecording = true;
+                activeMicBtn = btnEl;
+                btnEl.classList.add('text-red-500', 'animate-pulse');
+                btnEl.classList.remove('text-gray-500', 'hover:text-[var(--theme-color)]');
+                showToast("Listening...");
+            };
+
+            recognition.onresult = function(event) {
+                let newText = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        const transcript = event.results[i][0].transcript;
+                        const uniqueId = i + '-' + transcript;
+                        if (!handledResults.has(uniqueId)) {
+                            handledResults.add(uniqueId);
+                            newText += transcript;
+                        }
+                    }
+                }
+                if (newText) {
+                    if (document.activeElement !== el) {
+                        el.focus();
+                        const selection = window.getSelection();
+                        selection.selectAllChildren(el);
+                        selection.collapseToEnd();
+                    }
+                    document.execCommand('insertText', false, newText + ' ');
+                    syncCardState();
+                }
+            };
+
+            recognition.onerror = function(event) {
+                showToast("Microphone error: " + event.error);
+                stopRecordingUI();
+            };
+
+            recognition.onend = function() {
+                stopRecordingUI();
+            };
+
+            function stopRecordingUI() {
+                isRecording = false;
+                if (activeMicBtn) {
+                    activeMicBtn.classList.remove('text-red-500', 'animate-pulse');
+                    activeMicBtn.classList.add('text-gray-500', 'hover:text-[var(--theme-color)]');
+                    activeMicBtn = null;
+                }
+            }
+
+            recognition.start();
+        };
+
+        window.addExtraNoteRelative = function(idx, position) {
+            if (position === 'next') {
+                let isPrimaryInline = activeBlocks[idx].isPrimaryInline;
+                let groupId = activeBlocks[idx].groupId;
+                if (!isPrimaryInline && !groupId) {
+                    groupId = 'group_' + Date.now();
+                    activeBlocks[idx].groupId = groupId;
+                }
+                activeBlocks.splice(idx + 1, 0, { type: 'text', isPrimaryInline: isPrimaryInline, groupId: groupId, content: '' });
+            } else if (position === 'below') {
+                activeBlocks.splice(idx + 1, 0, { type: 'text', content: '' });
+            }
+            updatePreview();
+            syncCardState();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('.card-extra-def-input');
+                for(let i=0; i<inputs.length; i++) {
+                    if (parseInt(inputs[i].getAttribute('data-block-idx')) === idx + 1) {
+                        inputs[i].focus();
+                        break;
+                    }
+                }
+            }, 50);
+        };
+
+        window.addPrimaryNote = function(position) {
+            if (position === 'next') {
+                activeBlocks.unshift({ type: 'text', isPrimaryInline: true, content: '' });
+            } else if (position === 'below') {
+                activeBlocks.unshift({ type: 'text', content: '' });
+            }
+            updatePreview();
+            syncCardState();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('.card-extra-def-input');
+                if (inputs.length > 0) inputs[0].focus();
+            }, 50);
+        };
+
+        window.addExtraNote = function() {
+            activeBlocks.push({ type: 'text', content: '' });
+            updatePreview();
+            syncCardState();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('.card-extra-def-input');
+                if (inputs.length > 0) inputs[inputs.length - 1].focus();
+            }, 50);
+        };
+
+        window.toggleTextColorMenu = function(e) {
+            e.stopPropagation();
+            const targetMenu = e.currentTarget.nextElementSibling;
+            const isHidden = targetMenu.classList.contains('hidden');
+            document.querySelectorAll('.text-color-menu, .highlight-color-menu').forEach(m => m.classList.add('hidden'));
+            if (isHidden) targetMenu.classList.remove('hidden');
+        };
+
+        window.applyTextColor = function(color) {
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('foreColor', false, color);
+            document.querySelectorAll('.text-color-menu').forEach(m => m.classList.add('hidden'));
+            syncCardState();
+            checkFormatState();
+        };
+
+        window.cardImgAlign = function(alignType) {
+            if (activeImageIdx !== -1) {
+                pushImageHistory();
+                if (activeImageIsGroup && activeBlockIdx !== -1) {
+                    activeBlocks[activeBlockIdx].images[activeImageIdx].align = alignType;
+                } else {
+                    uploadedImages[activeImageIdx].align = alignType;
+                }
+                
+                if (edTarget.imgIdx !== -1) {
+                    const wrapper = edTarget.imgEl.parentElement;
+                    wrapper.className = `relative group/imgwrapper block is-editing ${alignType === 'left' ? 'mr-auto ml-0' : alignType === 'right' ? 'ml-auto mr-0' : 'mx-auto'}`;
+                } else {
+                    updatePreview();
+                }
+                syncCardState();
+            }
+        };
+        
+        window.setImgBorder = function(b) {
+             if (activeImageIdx !== -1) { 
+                 pushImageHistory();
+                 if (activeImageIsGroup && activeBlockIdx !== -1) {
+                     activeBlocks[activeBlockIdx].images[activeImageIdx].border = b;
+                 } else {
+                     uploadedImages[activeImageIdx].border = b;
+                 }
+                 if (edTarget.imgIdx !== -1) {
+                     edTarget.imgEl.style.border = `${b}px solid var(--theme-color)`;
+                 } else {
+                     updatePreview(); 
+                 }
+                 syncCardState();
+                 closeEdMenus();
+             } 
+        };
+
+        async function saveCardsToStorageNow() {
+            try {
+                // Offline fallback save
+                await localforage.setItem('ali_dashboard_cards', cards);
+                
+                // Cloud backup via Firebase
+                if (window.currentUser && window.db && window.fbSetDoc) {
+                    await window.fbSetDoc(window.fbDoc(window.db, "users", window.currentUser.uid), {
+                        cards: cards,
+                        lastUpdated: new Date()
+                    });
+                }
+            } catch (e) {
+                console.warn("Storage error", e);
+                showToast("Save error!");
+            }
+        }
+        const debouncedSave = debounce(saveCardsToStorageNow, 700);
+
+        window.populateHeaderCardsList = function() {
+            const list = document.getElementById('headerCardsList');
+            if (!list) return;
+            list.innerHTML = '';
+            
+            if (cards.length === 0) {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'dropdown-item text-gray-400 dark:text-gray-500 italic cursor-default opacity-60 text-center';
+                emptyItem.innerText = 'No cards';
+                list.appendChild(emptyItem);
+            } else {
+                cards.forEach((c) => {
+                    const isActive = (c.id === activeCardId);
+                    const item = document.createElement('div');
+                    
+                    let itemClass = 'dropdown-item flex items-center justify-between group/carditem transition-all ';
+                    if (isActive) itemClass += 'bg-[#e8f6f8] dark:bg-[#222] shadow-sm';
+                    else itemClass += 'hover:bg-black/5 dark:hover:bg-white/5';
+                    item.className = itemClass;
+                    
+                    const cardColor = c.color && c.color.hex ? c.color.hex : '#51b8cb';
+                    item.style.color = cardColor;
+                    
+                    const leftPart = document.createElement('div');
+                    leftPart.className = 'flex items-center gap-2 overflow-hidden flex-1';
+                    
+                    leftPart.innerHTML = `<i data-lucide="grip-vertical" class="w-3 h-3 opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-50 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0 transition-opacity text-gray-400 dark:text-gray-500"></i><i data-lucide="${isActive ? 'check-circle' : 'layout-template'}" class="w-4 h-4 shrink-0"></i> <span class="truncate ${isActive ? 'font-bold' : ''}">${c.title.trim() || 'Card ' + (cards.indexOf(c) + 1)}</span>`;
+                    
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'text-gray-400 hover:text-rose-500 transition-colors p-1.5 md:p-1 rounded-md opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-100 outline-none shrink-0';
+                    delBtn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4 md:w-3.5 md:h-3.5"></i>';
+                    delBtn.setAttribute('aria-label', 'Delete Card');
+                    if (cards.length <= 1) delBtn.style.display = 'none';
+
+                    delBtn.onclick = async (evt) => {
+                        evt.stopPropagation();
+                        const index = cards.findIndex(card => card.id === c.id);
+                        if (index > -1) {
+                            cards.splice(index, 1);
+                            await saveCardsToStorageNow();
+                            if (isActive && cards.length > 0) switchCard(cards[Math.max(0, index - 1)].id);
+                            else populateHeaderCardsList(); 
+                        }
+                    };
+
+                    item.onclick = (evt) => {
+                        evt.stopPropagation();
+                        if (!isActive) switchCard(c.id);
+                        window.closePreviewMenu();
+                    };
+                    
+                    item.appendChild(leftPart);
+                    item.appendChild(delBtn);
+                    list.appendChild(item);
+                });
+                
+                if (window.cardSortable) window.cardSortable.destroy();
+                window.cardSortable = new Sortable(list, {
+                    animation: 150,
+                    handle: '.cursor-grab',
+                    onEnd: async function (evt) {
+                        const fromIdx = evt.oldIndex;
+                        const toIdx = evt.newIndex;
+                        if (fromIdx !== toIdx && fromIdx !== undefined && toIdx !== undefined) {
+                            const moved = cards.splice(fromIdx, 1)[0];
+                            cards.splice(toIdx, 0, moved);
+                            await saveCardsToStorageNow();
+                            populateHeaderCardsList();
+                        }
+                    }
+                });
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+
+        window.openCardContextMenu = function(e) {
+            if (e.currentTarget && e.currentTarget.id === 'cardContainer') {
+                if (e.target.closest('#cardWord') || e.target.closest('#cardType') || e.target.closest('#cardDef') || e.target.closest('.card-extra-def-input') || e.target.closest('[id^="preview-wrapper-"]')) return;
+            }
+            e.preventDefault(); e.stopPropagation();
+            
+            const undoImgBtn = document.getElementById('contextUndoImageBtn');
+            if (undoImgBtn) {
+                if (imageUndoStack.length === 0) undoImgBtn.classList.add('opacity-50', 'pointer-events-none');
+                else undoImgBtn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+            const redoImgBtn = document.getElementById('contextRedoImageBtn');
+            if (redoImgBtn) {
+                if (imageRedoStack.length === 0) redoImgBtn.classList.add('opacity-50', 'pointer-events-none');
+                else redoImgBtn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+
+            const menu = document.getElementById('floatingPreviewMenu');
+            menu.classList.remove('hidden');
+            
+            menu.style.visibility = 'hidden';
+            requestAnimationFrame(() => {
+                const rect = menu.getBoundingClientRect();
+                let x = e.clientX, y = e.clientY;
+                let originX = 'left';
+                let originY = 'top';
+                
+                if (x + rect.width > window.innerWidth) { x = window.innerWidth - rect.width - 10; originX = 'right'; }
+                if (y + rect.height > window.innerHeight) { y = window.innerHeight - rect.height - 10; originY = 'bottom'; }
+                
+                menu.style.left = x + 'px'; menu.style.top = y + 'px';
+                menu.style.transformOrigin = `${originY} ${originX}`;
+                
+                menu.style.transform = "scale(0.9)";
+                menu.style.opacity = "0";
+                menu.style.visibility = 'visible';
+                
+                void menu.offsetWidth;
+                
+                menu.style.transition = "transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.15s ease-out";
+                menu.style.transform = "scale(1)";
+                menu.style.opacity = "1";
+            });
+        };
+
+        window.addNote = function(layoutType) {
+            activeBlocks.push({ type: 'text', inline: (layoutType === 'inline'), content: '' });
+            updatePreview();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('.card-extra-def-input');
+                if (inputs.length > 0) inputs[inputs.length - 1].focus();
+            }, 50);
+        };
+        
+        window.removeBlock = function(idx) {
+            activeBlocks.splice(idx, 1);
+            updatePreview();
+            syncCardState();
+        };
+
+        window.removeImageFromGroup = function(blockIdx, imgIdx) {
+            pushImageHistory();
+            activeBlocks[blockIdx].images.splice(imgIdx, 1);
+            if (activeBlocks[blockIdx].images.length === 0) activeBlocks.splice(blockIdx, 1);
+            updatePreview();
+            syncCardState();
+        };
+
+        window.moveImageLeftGroup = function(blockIdx, imgIdx) {
+            if (imgIdx > 0) {
+                pushImageHistory();
+                const group = activeBlocks[blockIdx].images;
+                [group[imgIdx - 1], group[imgIdx]] = [group[imgIdx], group[imgIdx - 1]];
+                updatePreview(); syncCardState();
+            }
+        };
+
+        window.moveImageRightGroup = function(blockIdx, imgIdx) {
+            const group = activeBlocks[blockIdx].images;
+            if (imgIdx < group.length - 1) {
+                pushImageHistory();
+                [group[imgIdx], group[imgIdx + 1]] = [group[imgIdx + 1], group[imgIdx]];
+                updatePreview(); syncCardState();
+            }
+        };
+
+        function pushImageHistory(stateOverride = null) {
+            if (isImageUndoingRedoing) return;
+            imageUndoStack.push(stateOverride || {
+                top: JSON.parse(JSON.stringify(uploadedImages)),
+                blocks: JSON.parse(JSON.stringify(activeBlocks))
+            });
+            if (imageUndoStack.length > 20) imageUndoStack.shift();
+            imageRedoStack = [];
+        }
+        
+        window.undoImageAction = function() {
+            if (imageUndoStack.length === 0) return;
+            isImageUndoingRedoing = true;
+            imageRedoStack.push({
+                top: JSON.parse(JSON.stringify(uploadedImages)),
+                blocks: JSON.parse(JSON.stringify(activeBlocks))
+            });
+            const st = imageUndoStack.pop();
+            uploadedImages = st.top || []; activeBlocks = st.blocks || [];
+            updatePreview(); isImageUndoingRedoing = false;
+        };
+        
+        window.redoImageAction = function() {
+            if (imageRedoStack.length === 0) return;
+            isImageUndoingRedoing = true;
+            imageUndoStack.push({
+                top: JSON.parse(JSON.stringify(uploadedImages)),
+                blocks: JSON.parse(JSON.stringify(activeBlocks))
+            });
+            const st = imageRedoStack.pop();
+            uploadedImages = st.top || []; activeBlocks = st.blocks || [];
+            updatePreview(); isImageUndoingRedoing = false;
+        };
+
+        window.onload = async function() {
+            applyTheme(); 
+            initColorPicker(); 
+            initBlendDropdown(); 
+            initFloatingMenu(); 
+            setupEventListeners(); 
+            await initCards(); 
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            initPWA();
+        };
+
+        window.updateWordCount = function(element) {
+            if(!element) return;
+            const text = element.innerText || '';
+            const count = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            const container = element.closest('.group\\/title, .group\\/def, .group\\/extradef');
+            if(container) {
+                const countSpan = container.querySelector('.toolbar-word-count');
+                if(countSpan) countSpan.innerText = count;
+            }
+        };
+
+        window.getNoteTextElement = function(target, isBlock) {
+            if (isBlock) return document.querySelector(`.card-extra-def-input[data-block-idx="${target}"]`);
+            return document.getElementById(target);
+        };
+
+        window.copyNoteText = function(e, target, isBlock = false) {
+            const el = window.getNoteTextElement(target, isBlock);
+            if (!el) return;
+            const textarea = document.createElement('textarea');
+            textarea.value = el.innerText; textarea.style.position = 'fixed'; textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                if (e && e.currentTarget) {
+                    const btn = e.currentTarget;
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }, 1500);
+                }
+            } catch (err) { console.warn('Copy failed', err); }
+            document.body.removeChild(textarea);
+        };
+
+        window.downloadNoteText = function(target, isBlock = false) {
+            const el = window.getNoteTextElement(target, isBlock);
+            if (!el) return;
+            const text = el.innerText;
+            const titleInput = document.getElementById('inputTitle').value.trim();
+            const filename = (titleInput ? titleInput : 'Note') + (isBlock ? `_Extra_${target+1}` : '') + '.txt';
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        document.getElementById('fileImportInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const text = evt.target.result;
+                const markerIndex = text.lastIndexOf("NOTION_APP_DATA:");
+                if (markerIndex !== -1) {
+                    try {
+                        const jsonStr = text.substring(markerIndex + 16);
+                        const cardData = JSON.parse(jsonStr);
+                        cardData.id = 'card_' + Date.now() + Math.random().toString(36).substr(2, 9);
+                        cards.push(cardData);
+                        await saveCardsToStorageNow();
+                        switchCard(cardData.id);
+                        showToast("Card imported successfully!");
+                    } catch(err) { showToast("Could not read data from this file."); }
+                } else {
+                    showToast("No card data found.");
+                }
+            };
+            reader.readAsText(file); e.target.value = '';
+        });
+
+        window.sortSelectedTextAZ = function() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) return;
+            const text = sel.toString();
+            if (!text) return;
+            const sortedText = text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
+                .join('\n');
+            document.execCommand('insertText', false, sortedText);
+            syncCardState();
+        };
+
+        function initBlendDropdown() {
+            const container = document.getElementById('blendOptions'), menu = document.getElementById('blendDropdownMenu'), btn = document.getElementById('blendBtn');
+            [0, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100].forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item text-gray-700 dark:text-gray-300';
+                item.innerText = b + '%';
+                item.onclick = (e) => { e.stopPropagation(); selectBlend(b); menu.classList.add('hidden'); };
+                container.appendChild(item);
+            });
+            btn.onclick = (e) => { e.stopPropagation(); const isHidden = menu.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) menu.classList.remove('hidden'); };
+        }
+
+        window.toggleEdMenu = function(menuId) {
+            const menu = document.getElementById(menuId);
+            const isHidden = menu.classList.contains('hidden');
+            closeEdMenus();
+            if (isHidden) menu.classList.remove('hidden');
+        };
+        
+        function closeEdMenus() {
+            const bMenu = document.getElementById('borderMenu');
+            if (bMenu) bMenu.classList.add('hidden');
+            const cMenu = document.getElementById('colorMenu');
+            if (cMenu) cMenu.classList.add('hidden');
+        }
+
+        function closeAllDropdowns() { 
+            document.querySelectorAll('[id$="DropdownMenu"]').forEach(el => el.classList.add('hidden')); 
+            document.querySelectorAll('.text-color-menu, .highlight-color-menu').forEach(el => el.classList.add('hidden'));
+            closeEdMenus();
+        }
+        
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.btn-format-color') && !e.target.closest('.text-color-menu')) {
+                document.querySelectorAll('.text-color-menu').forEach(el => el.classList.add('hidden'));
+            }
+            if (!e.target.closest('.btn-format-highlight') && !e.target.closest('.highlight-color-menu')) {
+                document.querySelectorAll('.highlight-color-menu').forEach(el => el.classList.add('hidden'));
+            }
+            if (!e.target.closest('[id$="Btn"]') && !e.target.closest('.format-toolbar') && e.target.id !== 'mobileFab' && !e.target.closest('#mobileFab')) {
+                document.querySelectorAll('[id$="DropdownMenu"]').forEach(el => el.classList.add('hidden')); 
+            }
+            
+            const prevM = document.getElementById('floatingPreviewMenu'); 
+            if(prevM && !prevM.classList.contains('hidden') && e.target.id !== 'mobileFab' && !e.target.closest('#mobileFab')) {
+                if (!prevM.contains(e.target)) {
+                    window.closePreviewMenu();
+                }
+            }
+        });
+
+        function initFloatingMenu() {
+            const defSizes = [24, 28, 32, 36, 40, 48, 64, 80];
+            const titleSizes = [32, 36, 40, 48, 56, 64, 72, 80, 96, 120];
+
+            const defMenu = document.getElementById('toolbarDefSizeDropdownMenu'), defBtn = document.getElementById('toolbarDefSizeBtn');
+            if (defBtn) defBtn.onclick = (e) => { e.stopPropagation(); closeAllDropdowns(); defMenu.classList.toggle('hidden'); };
+            defSizes.forEach(size => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item text-gray-700 text-center py-1.5';
+                item.innerText = size;
+                item.onmousedown = (e) => { e.preventDefault(); selectDefSize(size); defMenu.classList.add('hidden'); };
+                if (defMenu) defMenu.appendChild(item);
+            });
+
+            const titleMenu = document.getElementById('toolbarTitleSizeDropdownMenu'), titleBtn = document.getElementById('toolbarTitleSizeBtn');
+            if (titleBtn) titleBtn.onclick = (e) => { e.stopPropagation(); closeAllDropdowns(); titleMenu.classList.toggle('hidden'); };
+            titleSizes.forEach(size => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item text-gray-700 text-center py-1.5';
+                item.innerText = size;
+                item.onmousedown = (e) => { e.preventDefault(); selectTextSize(size); titleMenu.classList.add('hidden'); };
+                if (titleMenu) titleMenu.appendChild(item);
+            });
+
+            const catContainer = document.getElementById('floatingCategoryOptions');
+            if (catContainer) {
+                catContainer.innerHTML = '';
+                const manualItem = document.createElement('div');
+                manualItem.className = 'dropdown-item text-[#51b8cb] flex items-center gap-2 italic';
+                manualItem.innerHTML = `<i data-lucide="edit-3" class="w-3 h-3"></i> Custom Entry...`;
+                manualItem.onclick = (e) => { e.stopPropagation(); restoreCategory(); catContainer.classList.add('hidden'); document.getElementById('categoryChevron').classList.remove('rotate-180'); };
+                catContainer.appendChild(manualItem);
+
+                ["-", ...Object.keys(categoryColors)].forEach(cat => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item text-gray-700 dark:text-gray-300';
+                    item.innerText = cat;
+                    item.onclick = (e) => { e.stopPropagation(); selectCategory(cat); catContainer.classList.add('hidden'); document.getElementById('categoryChevron').classList.remove('rotate-180'); };
+                    catContainer.appendChild(item);
+                });
+            }
+            
+            const catMenuBtn = document.getElementById('categoryMenuBtn');
+            if (catMenuBtn) {
+                catMenuBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (catContainer) catContainer.classList.toggle('hidden');
+                    const chevron = document.getElementById('categoryChevron');
+                    if (chevron) chevron.classList.toggle('rotate-180');
+                };
+            }
+
+            const borderMenu = document.getElementById('borderMenu');
+            if (borderMenu) {
+                borderMenu.innerHTML = '';
+                [0, 1, 2, 3, 4, 6, 8, 10, 15, 20].forEach(b => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item text-gray-300 hover:text-white hover:bg-white/10';
+                    item.innerText = b + 'px';
+                    item.onclick = (e) => { e.stopPropagation(); setImgBorder(b); };
+                    borderMenu.appendChild(item);
+                });
+            }
+
+            const layoutOptions = document.getElementById('floatingLayoutOptions');
+            if (layoutOptions) {
+                layoutOptions.innerHTML = '';
+                [0, 1, 2, 3, 4].forEach(c => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item text-gray-700 flex items-center justify-between';
+                    item.innerHTML = `<span>${c === 0 ? 'Auto Layout' : c + ' Columns'}</span>`;
+                    item.onclick = (e) => { 
+                        e.stopPropagation(); selectImageCols(c); 
+                        window.closePreviewMenu(); 
+                        layoutOptions.classList.add('hidden');
+                    };
+                    layoutOptions.appendChild(item);
+                });
+            }
+
+            const imageLayoutToggleBtn = document.getElementById('imageLayoutToggleBtn');
+            if (imageLayoutToggleBtn) {
+                imageLayoutToggleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (layoutOptions) layoutOptions.classList.toggle('hidden');
+                };
+            }
+
+            const fontOptionsContainer = document.getElementById('floatingFontFamilyOptions');
+            if (fontOptionsContainer) {
+                fontOptionsContainer.innerHTML = '';
+                ['Caveat', 'Poppins', 'DM Serif Display'].forEach(f => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item text-gray-700 dark:text-gray-300';
+                    item.innerText = f;
+                    item.style.fontFamily = fontMap[f] || 'inherit';
+                    item.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        selectFontFamily(f); 
+                        fontOptionsContainer.classList.add('hidden');
+                        const chevron = document.getElementById('fontFamilyChevron');
+                        if (chevron) chevron.classList.remove('rotate-180');
+                    };
+                    fontOptionsContainer.appendChild(item);
+                });
+            }
+
+            const fontToggleBtn = document.getElementById('fontFamilyToggleBtn');
+            if (fontToggleBtn) {
+                fontToggleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (fontOptionsContainer) fontOptionsContainer.classList.toggle('hidden');
+                    const chevron = document.getElementById('fontFamilyChevron');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                };
+            }
+
+            const themeColorOptions = document.getElementById('floatingThemeColorOptions');
+            if (themeColorOptions) {
+                themeColorOptions.onmousedown = (e) => e.stopPropagation();
+                themeColorOptions.onclick = (e) => e.stopPropagation();
+            }
+
+            const themeColorToggleBtn = document.getElementById('themeColorToggleBtn');
+            if (themeColorToggleBtn) {
+                themeColorToggleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (themeColorOptions) themeColorOptions.classList.toggle('hidden');
+                    const chevron = document.getElementById('themeColorChevron');
+                    if (chevron) chevron.classList.toggle('rotate-180');
+                };
+            }
+
+            document.getElementById('cardContainer').addEventListener('contextmenu', window.openCardContextMenu);
+        }
+
+        function selectCategory(cat) { 
+            currentSelectedCategory = cat; 
+            const catLabel = document.getElementById('categoryLabel');
+            if (catLabel) catLabel.innerText = cat;
+            if (cat !== '-' && categoryColors[cat]) setManualColor(categoryColors[cat]); 
+            updatePreview(); 
+        }
+        function selectFontFamily(font) {
+            currentFontFamily = font;
+            const label = document.getElementById('fontFamilyLabel');
+            if (label) label.innerText = font;
+            updatePreview();
+        }
+        function selectTextSize(size) { 
+            currentSelectedSize = size; 
+            const label = document.getElementById('toolbarTitleSizeLabel'); 
+            if(label) label.innerText = size; 
+            updatePreview(); 
+        }
+        function selectDefSize(size) { 
+            currentSelectedDefSize = size; 
+            const label = document.getElementById('toolbarDefSizeLabel'); 
+            if(label) label.innerText = size; 
+            updatePreview(); 
+        }
+        function selectExtraDefSize(size) { 
+            currentSelectedExtraDefSize = size; 
+            updatePreview(); 
+        }
+        function selectImageBorder(border) { currentImageBorder = border; updatePreview(); }
+        function selectImageCols(cols) { currentImageCols = cols; updatePreview(); }
+        function selectBlend(blend) { 
+            currentBlendPercentage = blend; 
+            document.getElementById('blendValueLabel').innerText = blend + '%'; 
+            updatePreview(); 
+        }
+
+        window.clearTitle = function() { document.getElementById('inputTitle').value = ''; currentSelectedCategory = '-'; showTitlePlaceholder = false; updatePreview(); };
+        window.clearDef = function() { document.getElementById('inputDef').value = ''; showDefPlaceholder = false; updatePreview(); };
+        window.restoreTitle = function() { showTitlePlaceholder = true; updatePreview(); setTimeout(() => document.getElementById('cardWord').focus(), 50); };
+        window.restoreDef = function() { showDefPlaceholder = true; updatePreview(); setTimeout(() => document.getElementById('cardDef').focus(), 50); };
+        window.restoreCategory = function() { 
+            currentSelectedCategory = ''; 
+            const catLabel = document.getElementById('categoryLabel');
+            if (catLabel) catLabel.innerText = 'Custom';
+            updatePreview(); 
+            setTimeout(() => document.getElementById('cardType').focus(), 50); 
+        };
+
+        function getSelectionStyle(styleName) {
+            const sel = window.getSelection(); if (!sel.rangeCount) return null;
+            let node = sel.anchorNode; if (!node) return null;
+            let parent = node.nodeType === 3 ? node.parentNode : node;
+            while (parent && parent.id !== 'cardDef' && parent.id !== 'cardWord' && !parent.classList.contains('card-extra-def-input') && parent.tagName !== 'BODY') {
+                if (parent.style && parent.style[styleName]) return parent.style[styleName];
+                parent = parent.parentNode;
+            }
+            return null;
+        }
+
+        function removeStyleFromSelection(styleName) {
+            const sel = window.getSelection(); if (!sel.rangeCount) return;
+            let node = sel.anchorNode, parent = node.nodeType === 3 ? node.parentNode : node;
+            while (parent && parent.id !== 'cardDef' && parent.id !== 'cardWord' && !parent.classList.contains('card-extra-def-input') && parent.tagName !== 'BODY') {
+                if (parent.style && parent.style[styleName] !== undefined) parent.style[styleName] = '';
+                if (parent.getAttribute('style') === '') parent.removeAttribute('style');
+                parent = parent.parentNode;
+            }
+            const range = sel.getRangeAt(0), container = range.commonAncestorContainer;
+            if (container.nodeType === 1) { 
+                container.querySelectorAll('*').forEach(child => {
+                    if (sel.containsNode(child, true)) {
+                        if (child.style && child.style[styleName] !== undefined) child.style[styleName] = '';
+                        if (child.getAttribute('style') === '') child.removeAttribute('style');
+                    }
+                });
+            }
+        }
+
+        window.execFormat = function(cmd, val = null) {
+            document.execCommand('styleWithCSS', false, true);
+            if (cmd === 'highlight') {
+                let bgStyle = getSelectionStyle('backgroundColor');
+                if (bgStyle && bgStyle !== 'transparent' && bgStyle !== 'rgba(0, 0, 0, 0)') {
+                    document.execCommand('hiliteColor', false, 'transparent'); 
+                    removeStyleFromSelection('backgroundColor');
+                } else {
+                    document.execCommand('hiliteColor', false, hexToRgba(activeColor, 0.4));
+                }
+            } else if (cmd === 'textColor') {
+                let fStyle = getSelectionStyle('color'), activeRgbString = `rgb(${hexToRgb(activeColor).r},${hexToRgb(activeColor).g},${hexToRgb(activeColor).b})`;
+                if (fStyle && fStyle.replace(/\s/g, '').toLowerCase() === activeRgbString) {
+                    document.execCommand('foreColor', false, '#000000'); 
+                    removeStyleFromSelection('color');
+                } else {
+                    document.execCommand('foreColor', false, activeColor);
+                }
+            } else document.execCommand(cmd, false, val);
+            
+            const activeEl = document.activeElement;
+            if (activeEl && activeEl.classList.contains('card-extra-def-input')) {
+                const idx = activeEl.getAttribute('data-block-idx');
+                if (idx !== null && activeBlocks[idx]) {
+                    activeBlocks[idx].content = activeEl.innerHTML;
+                }
+            } else if (activeEl && activeEl.id === 'cardWord') {
+                document.getElementById('inputTitle').value = activeEl.innerHTML;
+                showTitlePlaceholder = true;
+            } else {
+                const target = document.getElementById('cardDef');
+                if (activeEl !== target) target.focus();
+                document.getElementById('inputDef').value = target.innerHTML;
+                showDefPlaceholder = true; 
+            }
+            syncCardState(); checkFormatState();
+        };
+
+        function checkFormatState() {
+            const activeEl = document.activeElement;
+            if (!activeEl) return;
+            if (activeEl.id !== 'cardDef' && activeEl.id !== 'cardWord' && !activeEl.classList.contains('card-extra-def-input')) return;
+
+            const isBold = document.queryCommandState('bold'), isUnderline = document.queryCommandState('underline'), isLeft = document.queryCommandState('justifyLeft'), isCenter = document.queryCommandState('justifyCenter'), isRight = document.queryCommandState('justifyRight'), isUl = document.queryCommandState('insertUnorderedList'), isOl = document.queryCommandState('insertOrderedList');
+            let bgStyle = getSelectionStyle('backgroundColor'); const isHighlighted = bgStyle && bgStyle !== 'transparent' && bgStyle !== 'rgba(0, 0, 0, 0)';
+            let fStyle = getSelectionStyle('color'); const activeRgb = hexToRgb(activeColor); const isColored = fStyle && fStyle.replace(/\s/g, '').toLowerCase() === `rgb(${activeRgb.r},${activeRgb.g},${activeRgb.b})`;
+
+            const toggleBtns = (selector, isActive) => {
+                document.querySelectorAll(selector).forEach(btn => {
+                    if (isActive) { btn.style.color = 'var(--theme-color)'; btn.classList.add('bg-black/5', 'dark:bg-[#333]'); btn.classList.remove('text-gray-500'); } 
+                    else { btn.style.color = ''; btn.classList.remove('bg-black/5', 'dark:bg-[#333]'); btn.classList.add('text-gray-500'); }
+                });
+            };
+            toggleBtns('.btn-format-bold', isBold); toggleBtns('.btn-format-underline', isUnderline); toggleBtns('.btn-format-left', isLeft); toggleBtns('.btn-format-center', isCenter); toggleBtns('.btn-format-right', isRight); toggleBtns('.btn-format-ul', isUl); toggleBtns('.btn-format-ol', isOl); toggleBtns('.btn-format-highlight', isHighlighted); toggleBtns('.btn-format-color', isColored);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+            
+            document.addEventListener('selectionchange', () => { 
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.id === 'cardDef' || activeEl.id === 'cardWord' || activeEl.classList.contains('card-extra-def-input'))) checkFormatState(); 
+            });
+            
+            document.getElementById('cardWord').addEventListener('input', (e) => { 
+                document.getElementById('inputTitle').value = e.target.innerHTML; showTitlePlaceholder = true; syncCardState(); 
+            });
+            
+            const cardTypeEl = document.getElementById('cardType');
+            cardTypeEl.addEventListener('input', (e) => { 
+                const val = e.target.innerText.trim(); currentSelectedCategory = val || '-'; 
+                if (categoryColors[val]) setManualColor(categoryColors[val]); syncCardState(); 
+            });
+            cardTypeEl.addEventListener('blur', (e) => { 
+                if (!e.target.innerText.trim()) { currentSelectedCategory = '-'; updatePreview(); } 
+            });
+            
+            const cardDefEl = document.getElementById('cardDef');
+            cardDefEl.addEventListener('input', (e) => { 
+                document.getElementById('inputDef').value = e.target.innerHTML; showDefPlaceholder = true; syncCardState(); 
+            });
+            cardDefEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '\t'); }
+            });
+
+            document.getElementById('cardContainer').addEventListener('input', (e) => {
+                if (e.target.classList.contains('card-extra-def-input')) {
+                    const idx = e.target.getAttribute('data-block-idx');
+                    if (idx !== null && activeBlocks[idx]) {
+                        activeBlocks[idx].content = e.target.innerHTML; syncCardState();
+                    }
+                }
+                if (e.target.isContentEditable) updateWordCount(e.target);
+            });
+            document.getElementById('cardContainer').addEventListener('keydown', (e) => {
+                if (e.target.classList.contains('card-extra-def-input') && e.key === 'Tab') {
+                    e.preventDefault(); document.execCommand('insertText', false, '\t');
+                }
+            });
+
+            document.getElementById('btnRandomColor').addEventListener('click', () => { 
+                setManualColor('#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')); 
+            });
+
+            document.addEventListener('paste', (event) => { 
+                const clipboardData = event.clipboardData || event.originalEvent.clipboardData;
+                const items = clipboardData.items; 
+                let isImagePaste = false;
+                
+                for (let index in items) { 
+                    if (items[index].kind === 'file' && items[index].type.includes('image')) {
+                        isImagePaste = true; 
+                        const file = items[index].getAsFile();
+                        processFile(file, 'blocks'); 
+                    }
+                } 
+                
+                if (isImagePaste) { 
+                    event.preventDefault(); 
+                    return; 
+                }
+                
+                if (event.target && event.target.isContentEditable) {
+                    const text = clipboardData.getData('text/plain');
+                    if (text) { 
+                        event.preventDefault(); 
+                        document.execCommand('insertText', false, text); 
+                    }
+                }
+            });
+            
+            window.addEventListener('mousemove', handleImageResizeMove);
+            window.addEventListener('mouseup', handleImageResizeEnd);
+            window.addEventListener('touchmove', (e) => handleImageResizeMove(e), { passive: false });
+            window.addEventListener('touchend', handleImageResizeEnd);
+            
+            window.addEventListener('resize', () => { 
+                if (edTarget.imgIdx !== -1) closeInlineEditor(false); 
+            });
+
+            window.addEventListener('mousedown', (e) => {
+                if (edTarget.imgIdx !== -1) {
+                    const toolbar = document.getElementById('floatingImageToolbar');
+                    const wrapper = edTarget.imgEl ? edTarget.imgEl.parentElement : null;
+                    if (toolbar && !toolbar.contains(e.target) && wrapper && !wrapper.contains(e.target)) closeInlineEditor(false);
+                }
+            });
+            window.addEventListener('touchstart', (e) => {
+                if (edTarget.imgIdx !== -1) {
+                    const toolbar = document.getElementById('floatingImageToolbar');
+                    const wrapper = edTarget.imgEl ? edTarget.imgEl.parentElement : null;
+                    if (toolbar && !toolbar.contains(e.target) && wrapper && !wrapper.contains(e.target)) closeInlineEditor(false);
+                }
+            });
+            
+            window.addEventListener('beforeinstallprompt', (e) => { 
+                e.preventDefault(); deferredPrompt = e; const b = document.getElementById('btnInstallApp'); 
+                if (b) { b.classList.remove('hidden'); b.classList.add('flex'); } 
+            });
+            document.getElementById('btnInstallApp').addEventListener('click', async () => { 
+                if (deferredPrompt) { 
+                    deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; 
+                    const b = document.getElementById('btnInstallApp'); b.classList.add('hidden'); b.classList.remove('flex'); 
+                } 
+            });
+
+            const cardBorderSlider = document.getElementById('inputCardBorder');
+            if(cardBorderSlider) {
+                cardBorderSlider.addEventListener('input', (e) => {
+                    currentCardBorder = parseInt(e.target.value);
+                    document.getElementById('cardBorderValueLabel').innerText = currentCardBorder + 'px';
+                    updatePreview();
+                });
+            }
+        }
+
+        function handleImageResizeStart(e, imgIdx, isGroup = false, blockIdx = -1) { 
+            stateBeforeDrag = { top: JSON.parse(JSON.stringify(uploadedImages)), blocks: JSON.parse(JSON.stringify(activeBlocks)) };
+            isDraggingImage = true; dragIsGroup = isGroup; dragBlockIdx = blockIdx; dragImageIdx = imgIdx; 
+            dragStartX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX; 
+            
+            dragWithCtrl = e.shiftKey || e.altKey || e.ctrlKey || e.metaKey;
+            
+            if (dragWithCtrl) {
+                dragStartXOffset = isGroup ? (activeBlocks[blockIdx].images[imgIdx].translateX || 0) : (uploadedImages[imgIdx].translateX || 0);
+            } else {
+                dragStartScale = isGroup ? activeBlocks[blockIdx].images[imgIdx].scale : uploadedImages[imgIdx].scale; 
+            }
+            if (e.type === 'mousedown') e.preventDefault(); 
+        }
+        
+        function handleImageResizeMove(e) { 
+            if (!isDraggingImage || dragImageIdx === -1) return; 
+            const currentX = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+            const deltaX = currentX - dragStartX; 
+            
+            if (dragWithCtrl) {
+                let newTranslateX = dragStartXOffset + deltaX;
+                if (dragIsGroup) {
+                    activeBlocks[dragBlockIdx].images[dragImageIdx].translateX = newTranslateX; 
+                    const w = document.getElementById(`preview-wrapper-group-${dragBlockIdx}-${dragImageIdx}`); 
+                    if (w) w.style.transform = `translateX(${newTranslateX}px)`; 
+                } else {
+                    uploadedImages[dragImageIdx].translateX = newTranslateX; 
+                    const w = document.getElementById(`preview-wrapper-${dragImageIdx}`); 
+                    if (w) w.style.transform = `translateX(${newTranslateX}px)`; 
+                }
+            } else {
+                let newScale = Math.max(10, Math.min(200, dragStartScale + (deltaX * 0.5))); 
+                if (dragIsGroup) {
+                    activeBlocks[dragBlockIdx].images[dragImageIdx].scale = newScale; 
+                    const w = document.getElementById(`preview-wrapper-group-${dragBlockIdx}-${dragImageIdx}`); 
+                    if (w) w.style.width = newScale + '%'; 
+                } else {
+                    uploadedImages[dragImageIdx].scale = newScale; 
+                    const w = document.getElementById(`preview-wrapper-${dragImageIdx}`); 
+                    if (w) w.style.width = newScale + '%'; 
+                }
+            }
+            
+            if (e.type === 'touchmove') e.preventDefault(); 
+        }
+        
+        function handleImageResizeEnd() { 
+            if (isDraggingImage) { 
+                let changed = false;
+                if (dragWithCtrl) {
+                    const targetTranslateX = dragIsGroup ? (activeBlocks[dragBlockIdx].images[dragImageIdx].translateX || 0) : (uploadedImages[dragImageIdx].translateX || 0);
+                    if (targetTranslateX !== dragStartXOffset) changed = true;
+                } else {
+                    const targetScale = dragIsGroup ? activeBlocks[dragBlockIdx].images[dragImageIdx].scale : uploadedImages[dragImageIdx].scale;
+                    if (targetScale !== dragStartScale) changed = true;
+                }
+                if (dragImageIdx !== -1 && changed) pushImageHistory(stateBeforeDrag);
+                
+                isDraggingImage = false; dragImageIdx = -1; dragBlockIdx = -1; dragIsGroup = false; dragWithCtrl = false;
+                updatePreview(); syncCardState();
+            } 
+        }
+
+        function initColorPicker() {
+            const map = document.getElementById('colorMap'), hueSlider = document.getElementById('inputHue');
+            if (!map || !hueSlider) return;
+            hueSlider.addEventListener('input', (e) => { hue = e.target.value; map.style.backgroundColor = `hsl(${hue}, 100%, 50%)`; calculateActiveColor(); });
+            const handleMapSelection = (e) => {
+                const rect = map.getBoundingClientRect(); 
+                let x = (e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0)) - rect.left;
+                let y = (e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0)) - rect.top;
+                x = Math.max(0, Math.min(x, rect.width)); y = Math.max(0, Math.min(y, rect.height));
+                saturation = (x / rect.width) * 100; brightness = 100 - (y / rect.height) * 100;
+                document.getElementById('colorMarker').style.left = x + 'px'; document.getElementById('colorMarker').style.top = y + 'px'; 
+                calculateActiveColor();
+            };
+            map.addEventListener('mousedown', (e) => { 
+                handleMapSelection(e); 
+                const onMouseMove = (moveEvent) => handleMapSelection(moveEvent);
+                const onMouseUp = () => { document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); }; 
+                document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp); 
+            });
+            map.addEventListener('touchstart', (e) => { 
+                handleMapSelection(e); 
+                const onTouchMove = (moveEvent) => handleMapSelection(moveEvent);
+                const onTouchEnd = () => { document.removeEventListener('touchmove', onTouchMove); document.removeEventListener('touchend', onTouchEnd); }; 
+                document.addEventListener('touchmove', onTouchMove, {passive: false}); document.addEventListener('touchend', onTouchEnd); 
+            }, {passive: false});
+        }
+
+        function calculateActiveColor() {
+            const s = saturation / 100, v = brightness / 100, i = Math.floor(hue / 60), f = hue / 60 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+            let r, g, b; 
+            switch(i % 6) { case 0: r = v, g = t, b = p; break; case 1: r = q, g = v, b = p; break; case 2: r = p, g = v, b = t; break; case 3: r = p, g = q, b = v; break; case 4: r = t, g = p, b = v; break; case 5: r = v, g = p, b = q; break; }
+            activeColor = rgbToHex(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)); 
+            updatePreview();
+        }
+
+        function setManualColor(hex, forceHue=null, forceSat=null, forceBri=null) {
+            activeColor = hex; 
+            const rgb = hexToRgb(hex), hsb = rgbToHsb(rgb.r, rgb.g, rgb.b); 
+            hue = forceHue !== null ? forceHue : hsb.h; saturation = forceSat !== null ? forceSat : hsb.s; brightness = forceBri !== null ? forceBri : hsb.b;
+            const map = document.getElementById('colorMap');
+            if (map) {
+                const rect = map.getBoundingClientRect(); const marker = document.getElementById('colorMarker');
+                if (marker) { marker.style.left = (saturation / 100) * (rect.width || 510) + 'px'; marker.style.top = (1 - brightness / 100) * (rect.height || 200) + 'px'; }
+                map.style.backgroundColor = `hsl(${hue}, 100%, 50%)`; 
+            }
+            const hS = document.getElementById('inputHue'); if (hS) hS.value = hue;
+            updatePreview();
+        }
+
+        function rgbToHex(r, g, b) { return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase(); }
+        function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : {r:0,g:0,b:0}; }
+        function rgbToHsb(r, g, b) { 
+            r /= 255; g /= 255; b /= 255; 
+            const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min; 
+            let h, s, v = max; s = max === 0 ? 0 : d / max; 
+            if (max === min) h = 0; else { switch(max) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; } h /= 6; } 
+            return { h: h * 360, s: s * 100, b: v * 100 }; 
+        }
+
+        function handleImageUpload(e) { Array.from(e.target.files).forEach(f => processFile(f, 'top')); e.target.value = ''; }
+        
+        function processFile(file, position = 'top') { 
+            const reader = new FileReader(); 
+            reader.onload = (e) => { 
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1200;
+                    const MAX_HEIGHT = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/webp', 0.80);
+                    
+                    // Offline Base64 Fallback directly since Storage is disabled
+                    pushImageHistory();
+                    if (position === 'blocks') {
+                        if (activeBlocks.length > 0 && activeBlocks[activeBlocks.length - 1].type === 'imageGroup') {
+                            activeBlocks[activeBlocks.length - 1].images.push({ src: compressedDataUrl, scale: 100, border: null, align: 'center', translateX: 0 });
+                        } else {
+                            activeBlocks.push({ type: 'imageGroup', images: [{ src: compressedDataUrl, scale: 100, border: null, align: 'center', translateX: 0 }] });
+                        }
+                    } else {
+                        uploadedImages.push({ src: compressedDataUrl, scale: 100, border: null, align: 'center', translateX: 0 }); 
+                    }
+                    updatePreview(); 
+                };
+                img.src = e.target.result;
+            }; 
+            reader.readAsDataURL(file); 
+        }
+        
+        function moveImageLeft(idx) { if (idx > 0) { pushImageHistory(); [uploadedImages[idx - 1], uploadedImages[idx]] = [uploadedImages[idx], uploadedImages[idx - 1]]; updatePreview(); } }
+        function moveImageRight(idx) { if (idx < uploadedImages.length - 1) { pushImageHistory(); [uploadedImages[idx], uploadedImages[idx + 1]] = [uploadedImages[idx + 1], uploadedImages[idx]]; updatePreview(); } }
+        function removeImage(idx) { pushImageHistory(); uploadedImages.splice(idx, 1); updatePreview(); }
+        
+        function getLightShade(hex, blendPercentage) { 
+            const rgb = hexToRgb(hex), factor = blendPercentage / 100, 
+            r = Math.round(255 - (255 - rgb.r) * factor), g = Math.round(255 - (255 - rgb.g) * factor), b = Math.round(255 - (255 - rgb.b) * factor); 
+            return `rgb(${r}, ${g}, ${b})`; 
+        }
+        function hexToRgba(hex, alpha) { const rgb = hexToRgb(hex); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`; }
+        
+        async function initCards() { 
+            try {
+                const savedCards = await localforage.getItem('ali_dashboard_cards');
+                if (savedCards && savedCards.length > 0) {
+                    cards = savedCards; switchCard(cards[0].id); return;
+                }
+            } catch (e) { console.error("Error loading saved cards", e); }
+            createCard(); 
+        }
+
+        async function createCard(useDefaultColor = false) { 
+            let genColor = "#51b8cb", genHue = 189, genSat = 60, genBri = 80;
+            if (cards.length > 0 && !useDefaultColor) {
+                genColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                const rgb = hexToRgb(genColor); const hsb = rgbToHsb(rgb.r, rgb.g, rgb.b);
+                genHue = hsb.h; genSat = hsb.s; genBri = hsb.b;
+            }
+            const newCard = { 
+                id: 'card_' + Date.now() + Math.random().toString(36).substr(2, 9), 
+                title: '', category: '-', definition: '', blocks: [], images: [],
+                color: { hex: genColor, hue: genHue, sat: genSat, bri: genBri }, 
+                textSize: 32, defSize: 24, imageBorder: 2, imageCols: 0, blend: 20, cardBorder: 4,
+                fontFamily: 'Caveat',
+                showTitlePlaceholder: true, showDefPlaceholder: false 
+            }; 
+            cards.push(newCard); await saveCardsToStorageNow(); switchCard(newCard.id); 
+        }
+        
+        function switchCard(id) { activeCardId = id; loadCurrentCard(); populateHeaderCardsList(); }
+
+        function loadCurrentCard() { 
+            isSwitching = true; const card = cards.find(c => c.id === activeCardId); if (!card) return; 
+            imageUndoStack = []; imageRedoStack = [];
+            
+            if (card.extraNotes || card.bottomImages) {
+                card.blocks = [];
+                if (card.extraNotes && card.extraNotes.length > 0) card.extraNotes.forEach(note => card.blocks.push({ type: 'text', inline: false, content: note }));
+                if (card.bottomImages && card.bottomImages.length > 0) card.blocks.push({ type: 'imageGroup', images: [...card.bottomImages] });
+                delete card.extraNotes; delete card.bottomImages;
+            }
+            if (!card.blocks) card.blocks = [];
+
+            document.getElementById('inputTitle').value = card.title; 
+            showTitlePlaceholder = card.showTitlePlaceholder !== false; showDefPlaceholder = card.showDefPlaceholder !== false; 
+            
+            currentFontFamily = card.fontFamily || 'Caveat';
+            const fLabel = document.getElementById('fontFamilyLabel'); if (fLabel) fLabel.innerText = currentFontFamily;
+
+            selectCategory(card.category || "-"); selectTextSize(card.textSize || 32); selectDefSize(card.defSize || 24); 
+            
+            currentImageBorder = card.imageBorder || 2; selectImageCols(card.imageCols || 0); 
+            const sL = document.getElementById('toolbarDefSizeLabel'); if (sL) sL.innerText = card.defSize || 24; 
+            const tL = document.getElementById('toolbarTitleSizeLabel'); if (tL) tL.innerText = card.textSize || 32; 
+            
+            currentBlendPercentage = card.blend !== undefined ? card.blend : 20; document.getElementById('blendValueLabel').innerText = currentBlendPercentage + '%'; 
+            currentCardBorder = card.cardBorder !== undefined ? card.cardBorder : 4;
+            const borderSlider = document.getElementById('inputCardBorder'); if(borderSlider) borderSlider.value = currentCardBorder;
+            const borderLabel = document.getElementById('cardBorderValueLabel'); if(borderLabel) borderLabel.innerText = currentCardBorder + 'px';
+
+            document.getElementById('inputDef').value = card.definition; 
+            uploadedImages = [...(card.images || [])]; activeBlocks = JSON.parse(JSON.stringify(card.blocks || []));
+            activeColor = card.color.hex; hue = card.color.hue; saturation = card.color.sat; brightness = card.color.bri; 
+            
+            setManualColor(activeColor, hue, saturation, brightness); isSwitching = false; 
+        }
+        
+        function syncCardState() { 
+            if (!activeCardId || isSwitching) return; const card = cards.find(c => c.id === activeCardId); if (!card) return; 
+            card.title = document.getElementById('inputTitle').value; card.category = currentSelectedCategory; card.definition = document.getElementById('inputDef').value; 
+            card.images = [...uploadedImages]; card.blocks = JSON.parse(JSON.stringify(activeBlocks)); 
+            card.color = { hex: activeColor, hue: hue, sat: saturation, bri: brightness }; 
+            card.textSize = currentSelectedSize; card.defSize = currentSelectedDefSize; card.extraDefSize = currentSelectedExtraDefSize; 
+            card.imageBorder = currentImageBorder; card.imageCols = currentImageCols; card.blend = currentBlendPercentage; card.cardBorder = currentCardBorder;
+            card.fontFamily = currentFontFamily;
+            card.showTitlePlaceholder = showTitlePlaceholder; card.showDefPlaceholder = showDefPlaceholder; 
+            
+            debouncedSave();
+        }
+
+        function updatePreview() {
+            const finalColor = activeColor, textColor = getDarkerShade(finalColor, 0.4), blend = currentBlendPercentage, textSize = currentSelectedSize, defSize = currentSelectedDefSize, imgBorder = currentImageBorder, imageCols = currentImageCols;
+            
+            document.documentElement.style.setProperty('--theme-color', finalColor);
+            document.documentElement.style.setProperty('--theme-blend', getLightShade(finalColor, blend));
+            
+            document.getElementById('cardContainer').style.borderWidth = currentCardBorder + 'px';
+
+            const bVL = document.getElementById('blendValueLabel'); if (bVL) bVL.style.color = finalColor;
+            const themeColorBtn = document.getElementById('themeColorToggleBtn'); if (themeColorBtn) themeColorBtn.style.color = finalColor;
+            
+            const dlBtnCtx = document.getElementById('cardDownloadBtnCtx'); if (dlBtnCtx) { dlBtnCtx.style.color = finalColor; }
+            const dlPdfBtnCtx = document.getElementById('cardDownloadPdfBtnCtx'); if (dlPdfBtnCtx) { dlPdfBtnCtx.style.color = finalColor; }
+
+            document.querySelectorAll('.dynamic-theme-color-swatch').forEach(swatch => swatch.style.backgroundColor = finalColor);
+
+            const word = document.getElementById('cardWord'); 
+            word.style.color = textColor; word.style.fontSize = textSize + 'px'; 
+            if (word.innerHTML !== document.getElementById('inputTitle').value) word.innerHTML = document.getElementById('inputTitle').value;
+            
+            const type = document.getElementById('cardType');
+            const catLabel = document.getElementById('categoryLabel');
+            if (catLabel) { catLabel.style.color = finalColor; catLabel.innerText = currentSelectedCategory; }
+            
+            if (currentSelectedCategory !== '-') { 
+                type.style.backgroundColor = hexToRgba(finalColor, 0.15); type.style.color = textColor; 
+                if (type.innerText !== currentSelectedCategory) type.innerText = currentSelectedCategory; 
+                type.classList.remove('hidden'); 
+            } else { 
+                type.innerText = ''; type.classList.add('hidden');
+            }
+            
+            if (edTarget.imgIdx !== -1) closeInlineEditor(false);
+
+            const titleS = document.getElementById('cardTitleSection'), titleR = document.getElementById('cardTitleRestore');
+            const titleText = word.innerText ? word.innerText.trim() : '';
+            if (!titleText && !showTitlePlaceholder && (currentSelectedCategory === '-' || !currentSelectedCategory.trim())) { 
+                titleS.classList.add('hidden'); titleR.classList.remove('hidden'); 
+            } else { 
+                titleS.classList.remove('hidden'); titleR.classList.add('hidden'); 
+            }
+            
+            const notesS = document.getElementById('cardNotesSection'), notesR = document.getElementById('cardDefRestore');
+            if (document.getElementById('inputDef').value.trim() || showDefPlaceholder) { 
+                notesS.classList.remove('hidden'); notesR.classList.add('hidden'); 
+                const cD = document.getElementById('cardDef'); cD.style.color = textColor; cD.style.fontSize = defSize + 'px'; 
+                if (cD.innerHTML !== document.getElementById('inputDef').value) cD.innerHTML = document.getElementById('inputDef').value; 
+            } else { 
+                notesS.classList.add('hidden'); notesR.classList.remove('hidden'); 
+            }
+
+            const cardImages = document.getElementById('cardImagesContainer');
+            if (cardImages) {
+                if (imageCols === 0) { cardImages.className = `flex flex-wrap gap-4 md:gap-9 w-full justify-center mt-2`; cardImages.style.gridTemplateColumns = ''; } 
+                else { cardImages.className = `grid gap-4 md:gap-9 w-full items-start mt-2`; cardImages.style.gridTemplateColumns = `repeat(${imageCols}, minmax(0, 1fr))`; }
+                cardImages.style.paddingTop = uploadedImages.length > 0 ? '1rem' : '0px'; cardImages.innerHTML = '';
+                
+                uploadedImages.forEach((imgObj, idx) => {
+                    const wrapper = document.createElement('div'); wrapper.id = `preview-wrapper-${idx}`; 
+                    let alignClass = 'mx-auto'; 
+                    if (imgObj.align === 'left') alignClass = 'mr-auto ml-0'; else if (imgObj.align === 'right') alignClass = 'ml-auto mr-0';
+                    wrapper.className = `relative group/imgwrapper block ${alignClass}`; wrapper.style.width = `${imgObj.scale}%`;
+                    if (imgObj.translateX) wrapper.style.transform = `translateX(${imgObj.translateX}px)`;
+                    
+                    const img = document.createElement('img'); img.src = imgObj.src; img.className = "resizable-img h-auto object-cover rounded-[1.5rem] shadow-sm block w-full";
+                    img.style.border = `${imgObj.border !== null ? imgObj.border : imgBorder}px solid ${finalColor}`; img.draggable = false;
+                    img.onmousedown = (e) => handleImageResizeStart(e, idx, false); img.ontouchstart = (e) => handleImageResizeStart(e, idx, false);
+                    img.oncontextmenu = (e) => { 
+                        e.preventDefault(); window.closePreviewMenu();
+                        startInlineEditor(img, idx, -1); showEditorToolbar();
+                    };
+                    
+                    const moveControls = document.createElement('div'); moveControls.className = "absolute -top-3 -left-3 flex gap-1.5 z-10 hidden-in-export opacity-100 lg:opacity-0 lg:group-hover/imgwrapper:opacity-100 transition-all";
+                    if (idx > 0) { 
+                        const lB = document.createElement('button'); lB.className = "bg-white dark:bg-[#1a1a1a] rounded-full cursor-pointer shadow-md flex items-center justify-center hover:scale-110 w-[28px] h-[28px] md:w-[32px] md:h-[32px] outline-none p-0"; lB.style.color = finalColor; lB.style.border = `2px solid ${finalColor}`; lB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 md:w-5 md:h-5"><path d="M15 18l-6-6 6-6"/></svg>`; 
+                        lB.onclick = (e) => { e.stopPropagation(); moveImageLeft(idx); }; moveControls.appendChild(lB); 
+                    }
+                    if (idx < uploadedImages.length - 1) { 
+                        const rB = document.createElement('button'); rB.className = "bg-white dark:bg-[#1a1a1a] rounded-full cursor-pointer shadow-md flex items-center justify-center hover:scale-110 w-[28px] h-[28px] md:w-[32px] md:h-[32px] outline-none p-0"; rB.style.color = finalColor; rB.style.border = `2px solid ${finalColor}`; rB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 md:w-5 md:h-5"><path d="M9 18l6-6-6-6"/></svg>`; 
+                        rB.onclick = (e) => { e.stopPropagation(); moveImageRight(idx); }; moveControls.appendChild(rB); 
+                    }
+                    
+                    const editB = document.createElement('button');
+                    editB.className = "bg-white dark:bg-[#1a1a1a] rounded-full cursor-pointer shadow-md flex items-center justify-center hover:scale-110 w-[28px] h-[28px] md:w-[32px] md:h-[32px] outline-none p-0";
+                    editB.style.color = finalColor; editB.style.border = `2px solid ${finalColor}`;
+                    editB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 md:w-4 md:h-4"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+                    editB.onclick = (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        window.closePreviewMenu();
+                        startInlineEditor(img, idx, -1);
+                        showEditorToolbar();
+                    };
+                    moveControls.appendChild(editB);
+
+                    const delBtn = document.createElement('button'); delBtn.className = "absolute -top-3 -right-3 opacity-100 lg:opacity-0 lg:group-hover/imgwrapper:opacity-100 transition-all z-10 hidden-in-export flex items-center justify-center hover:scale-110 outline-none p-0 bg-transparent border-none w-[28px] h-[28px] md:w-[32px] md:h-[32px]"; delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-full h-full drop-shadow-md"><defs><linearGradient id="delGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ff3333" /><stop offset="100%" stop-color="#cc0000" /></linearGradient></defs><circle cx="12" cy="12" r="11" fill="url(#delGrad)" stroke="#990000" stroke-width="0.5" /><path d="M8 8 L16 16 M16 8 L8 16" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></svg>`; 
+                    delBtn.onclick = (e) => { e.stopPropagation(); removeImage(idx); };
+                    
+                    wrapper.appendChild(img); if (moveControls.children.length > 0) wrapper.appendChild(moveControls); wrapper.appendChild(delBtn); cardImages.appendChild(wrapper);
+                });
+            }
+
+            const blocksContainer = document.getElementById('cardBlocksContainer');
+            const primaryInlineContainer = document.getElementById('inlineExtraNotesContainer');
+
+            if (blocksContainer) {
+                let blockHTML = '';
+                let primaryInlineHTML = '';
+                let currentGroupId = null;
+                let groupContent = '';
+
+                const closeGroup = () => {
+                    if (currentGroupId) {
+                        blockHTML += `<div class="flex flex-col md:flex-row gap-4 w-full mt-2">${groupContent}</div>`;
+                        groupContent = '';
+                        currentGroupId = null;
+                    }
+                };
+
+                activeBlocks.forEach((block, idx) => {
+                    if (block.type === 'text') {
+                        const html = `
+                            <div class="group/extradef relative py-1 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl hover:bg-black/10 transition-colors mt-1 ${(block.groupId || block.isPrimaryInline) ? 'flex-1' : ''}" id="block-wrapper-${idx}" data-block-type="text">
+                                <div class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-end md:justify-center items-center p-1 gap-1 w-max max-w-[calc(100vw-5.5rem)] md:max-w-none opacity-0 pointer-events-none group-focus-within/extradef:opacity-100 group-focus-within/extradef:pointer-events-auto transition-all duration-200 z-[150] origin-bottom-right scale-90 group-focus-within/extradef:scale-100" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);">
+                                    <button onmousedown="event.preventDefault(); execFormat('undo')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors"><i data-lucide="undo" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); execFormat('redo')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors"><i data-lucide="redo" class="w-4 h-4"></i></button>
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <button onmousedown="event.preventDefault(); execFormat('selectAll')" class="p-1.5 hover:bg-black/10] rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-selectall" aria-label="Select All" title="Select All"><i data-lucide="scan-text" class="w-4 h-4"></i></button>
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <button onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                                    
+                                    <div class="relative group/highlightpicker">
+                                        <button onmousedown="event.preventDefault(); toggleHighlightColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-highlight" aria-label="Highlight Color"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+                                        <div class="highlight-color-menu hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent border border-[#d0ebf0] p-2 flex flex-wrap gap-1.5 rounded-xl shadow-xl z-[60] w-[165px]" onmousedown="event.preventDefault(); event.stopPropagation();" onclick="event.stopPropagation();">
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('transparent')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform flex items-center justify-center bg-gray-100 dark:bg-gray-800" style="border: 1px solid rgba(0,0,0,0.1);"><i data-lucide="x" class="w-3 h-3 text-gray-500"></i></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor(activeColor)" class="dynamic-theme-color-swatch w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform opacity-60" style="background-color: #51b8cb; border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#ef4444')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-red-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#f97316')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-orange-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#f59e0b')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-yellow-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#84cc16')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-lime-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#10b981')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-emerald-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#06b6d4')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-cyan-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#3b82f6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-blue-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyHighlightColor('#8b5cf6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-violet-500 opacity-60" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="relative group/colorpicker">
+                                        <button onmousedown="event.preventDefault(); toggleTextColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-color"><i data-lucide="palette" class="w-4 h-4"></i></button>
+                                        <div class="text-color-menu hidden absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-transparent border border-[#d0ebf0] p-2 flex flex-wrap gap-1.5 rounded-xl shadow-xl z-[60] w-[165px]" onmousedown="event.preventDefault(); event.stopPropagation();" onclick="event.stopPropagation();">
+                                            <div onmousedown="event.preventDefault(); applyTextColor(activeColor)" class="dynamic-theme-color-swatch w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform" style="background-color: #51b8cb; border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#ef4444')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-red-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#f97316')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-orange-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#f59e0b')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-yellow-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#84cc16')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-lime-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#10b981')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-emerald-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#06b6d4')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-cyan-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#3b82f6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-blue-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#8b5cf6')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-violet-500" style="border: 1px solid rgba(0,0,0,0.1);"></div>
+                                            <div onmousedown="event.preventDefault(); applyTextColor('#222222')" class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform bg-gray-900" style="border: 1px solid rgba(60,60,60,1.1);"></div>
+                                        </div>
+                                    </div>
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <button onmousedown="event.preventDefault(); execFormat('justifyLeft')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); execFormat('justifyCenter')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-center"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); execFormat('justifyRight')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-right"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <button onmousedown="event.preventDefault(); execFormat('insertUnorderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ul"><i data-lucide="list" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); execFormat('insertOrderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ol"><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); sortSelectedTextAZ()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Sort A-Z"><i data-lucide="arrow-down-a-z" class="w-4 h-4"></i></button>
+                                    <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                    <button onmousedown="event.preventDefault(); copyNoteText(event, ${idx}, true)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Copy Text"><i data-lucide="copy" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); downloadNoteText(${idx}, true)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Download .txt"><i data-lucide="file-down" class="w-4 h-4"></i></button>
+                                    
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <button onclick="event.preventDefault(); toggleSpeechToText(${idx}, true, this)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Dictate"><i data-lucide="mic" class="w-4 h-4"></i></button>
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <button onmousedown="event.preventDefault(); addExtraNoteRelative(${idx}, 'next')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Add Note Next To"><i data-lucide="panel-right" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); addExtraNoteRelative(${idx}, 'below')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Add Note Below"><i data-lucide="panel-bottom" class="w-4 h-4"></i></button>
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <div class="flex items-center gap-1 text-gray-700 px-1" title="Word Count">
+                                        <i data-lucide="whole-word" class="w-3.5 h-3.5"></i>
+                                        <span class="text-[10px] font-bold toolbar-word-count">0</span>
+                                    </div>
+                                </div>
+                                <div class="card-extra-def-input font-medium leading-relaxed whitespace-pre-wrap outline-none" contenteditable="true" data-placeholder="Enter note here..." style="text-decoration: none; min-height: 1.5em; font-family: 'Caveat', cursive;" data-block-idx="${idx}">${block.content || ''}</div>
+                                <button onmousedown="event.preventDefault(); removeBlock(${idx})" class="clear-btn absolute top-1/2 -translate-y-1/2 right-2 md:right-4 p-1.5 md:p-2 bg-transparent shadow-sm rounded-full text-gray-400 hover:text-red-500 opacity-100 lg:opacity-0 lg:group-hover/extradef:opacity-100 transition-opacity z-10 border border-gray-100 dark:border-[#333]" aria-label="Remove Note"><i data-lucide="x" class="w-3.5 h-3.5 md:w-4 md:h-4"></i></button>
+                            </div>
+                        `;
+                        if (block.isPrimaryInline) {
+                            closeGroup();
+                            primaryInlineHTML += html;
+                        } else if (block.groupId) {
+                            if (currentGroupId !== block.groupId) {
+                                closeGroup();
+                                currentGroupId = block.groupId;
+                            }
+                            groupContent += html;
+                        } else {
+                            closeGroup();
+                            blockHTML += html;
+                        }
+                    } else if (block.type === 'imageGroup') {
+                        closeGroup();
+                        blockHTML += `
+                            <div id="block-wrapper-${idx}" data-block-type="imageGroup" class="w-full relative group/blockimg">
+                                <div id="image-group-${idx}" class="w-full"></div>
+                            </div>
+                        `;
+                    }
+                });
+                closeGroup();
+
+                blocksContainer.innerHTML = blockHTML;
+                if (primaryInlineContainer) primaryInlineContainer.innerHTML = primaryInlineHTML;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                activeBlocks.forEach((block, idx) => {
+                    if (block.type === 'text') {
+                        const el = document.querySelector(`.card-extra-def-input[data-block-idx="${idx}"]`);
+                        if (el) { el.style.color = textColor; el.style.fontSize = defSize + 'px'; }
+                    } else if (block.type === 'imageGroup') {
+                        const groupContainer = document.getElementById(`image-group-${idx}`);
+                        if (groupContainer) {
+                            if (imageCols === 0) { groupContainer.className = `flex flex-wrap gap-4 md:gap-9 w-full justify-center mt-2`; groupContainer.style.gridTemplateColumns = ''; } 
+                            else { groupContainer.className = `grid gap-4 md:gap-9 w-full items-start mt-2`; groupContainer.style.gridTemplateColumns = `repeat(${imageCols}, minmax(0, 1fr))`; }
+                            groupContainer.style.paddingTop = '1rem'; groupContainer.innerHTML = '';
+                            
+                            block.images.forEach((imgObj, imgIdx) => {
+                                const wrapper = document.createElement('div'); wrapper.id = `preview-wrapper-group-${idx}-${imgIdx}`; 
+                                let alignClass = 'mx-auto'; 
+                                if (imgObj.align === 'left') alignClass = 'mr-auto ml-0'; else if (imgObj.align === 'right') alignClass = 'ml-auto mr-0';
+                                wrapper.className = `relative group/imgwrapper block ${alignClass}`; wrapper.style.width = `${imgObj.scale}%`;
+                                if (imgObj.translateX) wrapper.style.transform = `translateX(${imgObj.translateX}px)`;
+                                
+                                const img = document.createElement('img'); img.src = imgObj.src; img.className = "resizable-img h-auto object-cover rounded-[1.5rem] shadow-sm block w-full";
+                                img.style.border = `${imgObj.border !== null ? imgObj.border : imgBorder}px solid ${finalColor}`; img.draggable = false;
+                                img.onmousedown = (e) => handleImageResizeStart(e, imgIdx, true, idx); img.ontouchstart = (e) => handleImageResizeStart(e, imgIdx, true, idx);
+                                img.oncontextmenu = (e) => { 
+                                    e.preventDefault(); window.closePreviewMenu();
+                                    startInlineEditor(img, imgIdx, idx); showEditorToolbar();
+                                };
+                                
+                                const moveControls = document.createElement('div'); moveControls.className = "absolute -top-3 -left-3 flex gap-1.5 z-10 hidden-in-export opacity-100 lg:opacity-0 lg:group-hover/imgwrapper:opacity-100 transition-all";
+                                if (imgIdx > 0) { 
+                                    const lB = document.createElement('button'); lB.className = "bg-white dark:bg-[#1a1a1a] rounded-full cursor-pointer shadow-md flex items-center justify-center hover:scale-110 w-[28px] h-[28px] outline-none p-0"; lB.style.color = finalColor; lB.style.border = `2px solid ${finalColor}`; lB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M15 18l-6-6 6-6"/></svg>`; 
+                                    lB.onclick = (e) => { e.stopPropagation(); moveImageLeftGroup(idx, imgIdx); }; moveControls.appendChild(lB); 
+                                }
+                                if (imgIdx < block.images.length - 1) { 
+                                    const rB = document.createElement('button'); rB.className = "bg-white dark:bg-[#1a1a1a] rounded-full cursor-pointer shadow-md flex items-center justify-center hover:scale-110 w-[28px] h-[28px] outline-none p-0"; rB.style.color = finalColor; rB.style.border = `2px solid ${finalColor}`; rB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M9 18l6-6-6-6"/></svg>`; 
+                                    rB.onclick = (e) => { e.stopPropagation(); moveImageRightGroup(idx, imgIdx); }; moveControls.appendChild(rB); 
+                                }
+                                
+                                const editB = document.createElement('button');
+                                editB.className = "bg-white dark:bg-[#1a1a1a] rounded-full cursor-pointer shadow-md flex items-center justify-center hover:scale-110 w-[28px] h-[28px] outline-none p-0";
+                                editB.style.color = finalColor; editB.style.border = `2px solid ${finalColor}`;
+                                editB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+                                editB.onclick = (e) => {
+                                    e.preventDefault(); e.stopPropagation();
+                                    window.closePreviewMenu();
+                                    startInlineEditor(img, imgIdx, idx);
+                                    showEditorToolbar();
+                                };
+                                moveControls.appendChild(editB);
+
+                                const delBtn = document.createElement('button'); delBtn.className = "absolute -top-3 -right-3 opacity-100 lg:opacity-0 lg:group-hover/imgwrapper:opacity-100 transition-all z-10 hidden-in-export flex items-center justify-center hover:scale-110 outline-none p-0 bg-transparent border-none w-[28px] h-[28px]"; delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-full h-full drop-shadow-md"><defs><linearGradient id="delGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ff3333" /><stop offset="100%" stop-color="#cc0000" /></linearGradient></defs><circle cx="12" cy="12" r="11" fill="url(#delGrad)" stroke="#990000" stroke-width="0.5" /><path d="M8 8 L16 16 M16 8 L8 16" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></svg>`; 
+                                delBtn.onclick = (e) => { e.stopPropagation(); removeImageFromGroup(idx, imgIdx); };
+                                
+                                wrapper.appendChild(img); if (moveControls.children.length > 0) wrapper.appendChild(moveControls); wrapper.appendChild(delBtn); groupContainer.appendChild(wrapper);
+                            });
+                        }
+                    }
+                });
+            }
+            
+            updateFavicon(); 
+            
+            const activeFontCss = fontMap[currentFontFamily] || fontMap['Caveat'];
+            
+            document.getElementById('dynamic-card-styles').innerHTML = `
+                input[type=range]::-webkit-slider-thumb { background: white !important; border: 3px solid ${finalColor} !important; box-shadow: 0 0 10px ${finalColor}66 !important; } 
+                #cardWord, #cardDef, #cardType, .card-extra-def-input { 
+                    text-decoration: none !important; 
+                    font-family: ${activeFontCss} !important;
+                }
+            `;
+            
+            updateWordCount(document.getElementById('cardWord'));
+            updateWordCount(document.getElementById('cardDef'));
+            document.querySelectorAll('.card-extra-def-input').forEach(el => updateWordCount(el));
+
+            syncCardState();
+        }
+
+        function getDarkerShade(hex, factor = 0.7) { const rgb = hexToRgb(hex); return rgbToHex(Math.round(rgb.r * factor), Math.round(rgb.g * factor), Math.round(rgb.b * factor)); }
+        
+        function generateNotebookSVG() { 
+            const color = "#ffffff", yellow = "#ffffff", dark = "#222222"; 
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%"><path d="M 25 15 L 75 15 C 80.5 15 85 19.5 85 25 L 85 65 L 65 65 C 62.2 65 60 67.2 60 70 L 60 85 L 25 85 C 19.5 85 15 80.5 15 75 L 15 25 C 15 19.5 19.5 15 25 15 Z" fill="${color}" stroke="${dark}" stroke-width="4" stroke-linejoin="round"/><path d="M 85 65 L 65 85 L 65 70 C 65 67.2 67.2 65 70 65 Z" fill="${yellow}" stroke="${dark}" stroke-width="4" stroke-linejoin="round"/><g stroke="${dark}" stroke-width="4" fill="${color}"><rect x="12" y="27" width="16" height="6" rx="3" /><rect x="12" y="42" width="16" height="6" rx="3" /><rect x="12" y="57" width="16" height="6" rx="3" /><rect x="12" y="72" width="16" height="6" rx="3" /></g><g fill="${dark}"><circle cx="25" cy="30" r="3" /><circle cx="25" cy="45" r="3" /><circle cx="25" cy="60" r="3" /><circle cx="25" cy="75" r="3" /></g></svg>`.trim(); 
+        }
+        
+        function updateFavicon() { document.getElementById('favicon').href = `data:image/svg+xml;base64,${btoa(generateNotebookSVG())}`; }
+        
+        function createPNGIconFromSVG(svg, size) { 
+            return new Promise((resolve) => { 
+                const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size; 
+                const ctx = canvas.getContext('2d'), img = new Image(); 
+                img.onload = () => { ctx.clearRect(0, 0, size, size); const p = size * 0.15; ctx.drawImage(img, p, p, size - p * 2, size - p * 2); resolve(canvas.toDataURL('image/png')); }; 
+                img.onerror = () => resolve(`data:image/svg+xml;base64,${btoa(svg)}`); 
+                img.src = `data:image/svg+xml;base64,${btoa(svg)}`; 
+            }); 
+        }
+        
+        async function initPWA() { 
+            try { 
+                const svg = generateNotebookSVG(), i192 = await createPNGIconFromSVG(svg, 192), i512 = await createPNGIconFromSVG(svg, 512); 
+                document.getElementById('apple-touch-icon').href = i192; 
+                const manifest = { 
+                    name: "Notion", short_name: "Notion", start_url: window.location.href.split('?')[0], display: "fullscreen", 
+                    background_color: "#000000", theme_color: "#000000", 
+                    icons: [{ src: i192, sizes: "192x192", type: "image/png", purpose: "any maskable" }, { src: i512, sizes: "512x512", type: "image/png", purpose: "any maskable" }] 
+                }; 
+                document.getElementById('manifest').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest)); 
+            } catch (e) { console.error("PWA initialization skipped:", e); } 
+        }
+
+        let isDownloading = false;
+        async function downloadPNG() {
+            if (isDownloading) return; isDownloading = true; 
+            
+            const cardWordEl = document.getElementById('cardWord');
+            const tempDiv = document.createElement('div');
+            if(cardWordEl) tempDiv.innerHTML = cardWordEl.innerHTML;
+            const f = (tempDiv.innerText.trim()) ? tempDiv.innerText.trim() : "Card";
+            
+            const card = document.getElementById('cardContainer');
+            try {
+                const imgs = card.querySelectorAll('img'); 
+                await Promise.all(Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })));
+                
+                const canvas = await html2canvas(card, { 
+                    scale: 3, backgroundColor: null, useCORS: true, 
+                    onclone: (doc) => { 
+                        const c = doc.getElementById('cardContainer'); 
+                        doc.querySelectorAll('#cardTitleRestore, #cardDefRestore, #cardExtraDefRestore, .format-toolbar, .clear-btn, .hidden-in-export').forEach(el => el.style.display = 'none');
+                        doc.querySelectorAll('[contenteditable]').forEach(el => { if (!el.innerText.trim()) el.removeAttribute('data-placeholder'); });
+                        if (!doc.getElementById('cardDef').innerText.trim()) doc.getElementById('cardNotesSection').style.display = 'none';
+                        
+                        if (doc.getElementById('cardBlocksContainer')) {
+                            doc.querySelectorAll('.card-extra-def-input').forEach(el => { if (!el.innerText.trim()) el.parentElement.style.display = 'none'; });
+                        }
+                        if (!doc.getElementById('cardType').innerText.trim()) doc.getElementById('cardType').style.display = 'none';
+                        if (!doc.getElementById('cardWord').innerText.trim() && !doc.getElementById('cardType').innerText.trim()) doc.getElementById('cardTitleSection').style.display = 'none';
+                        if (doc.getElementById('cardImagesContainer') && doc.getElementById('cardImagesContainer').children.length > 0) doc.getElementById('cardImagesContainer').style.paddingTop = '1rem';
+                        
+                        doc.querySelectorAll('#cardWord, #cardDef, .card-extra-def-input, #cardType').forEach(el => el.style.textDecoration = 'none');
+                    }
+                });
+                
+                syncCardState();
+                const cardState = cards.find(c => c.id === activeCardId);
+                const marker = "\nNOTION_APP_DATA:" + JSON.stringify(cardState);
+
+                canvas.toBlob(blob => {
+                    const finalBlob = new Blob([blob, marker], { type: 'image/png' });
+                    const url = URL.createObjectURL(finalBlob);
+                    const l = document.createElement('a'); l.download = `${f}.png`; l.href = url; l.click();
+                    URL.revokeObjectURL(url);
+                    isDownloading = false;
+                });
+            } catch (e) { console.error("Export failed", e); isDownloading = false; }
+        }
+
+        let isDownloadingPDF = false;
+        async function downloadPDF(openInNewTab = false) {
+            if (isDownloadingPDF) return; isDownloadingPDF = true; 
+            
+            let newTab = null;
+            if (openInNewTab) newTab = window.open('', '_blank');
+            
+            const cardWordEl = document.getElementById('cardWord');
+            const tempDiv = document.createElement('div');
+            if(cardWordEl) tempDiv.innerHTML = cardWordEl.innerHTML;
+            const f = (tempDiv.innerText.trim()) ? tempDiv.innerText.trim() : "Card";
+            
+            const card = document.getElementById('cardContainer');
+            try {
+                const w = card.clientWidth, h = card.clientHeight;
+                const imgs = card.querySelectorAll('img'); 
+                await Promise.all(Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })));
+                
+                const opt = {
+                    margin:       0,
+                    filename:     `${f}.pdf`,
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { 
+                        scale: 2, backgroundColor: '#ffffff', useCORS: true, width: w, height: h, 
+                        onclone: (doc) => { 
+                            const style = doc.createElement('style');
+                            style.innerHTML = `
+                                #cardContainer {
+                                    background-color: #ffffff !important; background: #ffffff !important;
+                                    border: none !important; border-width: 0 !important; border-radius: 0px !important;
+                                    box-shadow: none !important; margin: 0 !important; max-width: none !important;
+                                    width: ${w}px !important; height: ${h}px !important;
+                                }
+                                body, html { background-color: #ffffff !important; background: #ffffff !important; }
+                            `;
+                            doc.head.appendChild(style);
+
+                            const c = doc.getElementById('cardContainer'); 
+                            c.className = c.className.split(' ').filter(cls => !cls.includes('border') && !cls.includes('rounded') && !cls.includes('theme-blend') && !cls.includes('shadow')).join(' ');
+                            
+                            c.style.setProperty('background-color', '#ffffff', 'important');
+                            c.style.setProperty('border', 'none', 'important');
+                            c.style.setProperty('width', w + 'px', 'important');
+                            c.style.setProperty('height', h + 'px', 'important');
+                            
+                            doc.querySelectorAll('#cardTitleRestore, #cardDefRestore, #cardExtraDefRestore, .format-toolbar, .clear-btn, .hidden-in-export').forEach(el => el.style.display = 'none');
+                            doc.querySelectorAll('[contenteditable]').forEach(el => { if (!el.innerText.trim()) el.removeAttribute('data-placeholder'); });
+                            if (!doc.getElementById('cardDef').innerText.trim()) doc.getElementById('cardNotesSection').style.display = 'none';
+                            
+                            if (doc.getElementById('cardBlocksContainer')) {
+                                doc.querySelectorAll('.card-extra-def-input').forEach(el => { if (!el.innerText.trim()) el.parentElement.style.display = 'none'; });
+                            }
+                            if (!doc.getElementById('cardType').innerText.trim()) doc.getElementById('cardType').style.display = 'none';
+                            if (!doc.getElementById('cardWord').innerText.trim() && !doc.getElementById('cardType').innerText.trim()) doc.getElementById('cardTitleSection').style.display = 'none';
+                            if (doc.getElementById('cardImagesContainer') && doc.getElementById('cardImagesContainer').children.length > 0) doc.getElementById('cardImagesContainer').style.paddingTop = '1rem';
+                            
+                            doc.querySelectorAll('#cardWord, #cardDef, .card-extra-def-input, #cardType').forEach(el => el.style.textDecoration = 'none');
+                        }
+                    },
+                    jsPDF:        { unit: 'px', format: [w, h + 1], orientation: w > h ? 'landscape' : 'portrait' }
+                };
+                
+                const pdfBlob = await html2pdf().set(opt).from(card).output('blob');
+                syncCardState();
+                const cardState = cards.find(c => c.id === activeCardId);
+                const marker = "\nNOTION_APP_DATA:" + JSON.stringify(cardState);
+                
+                const finalBlob = new Blob([pdfBlob, marker], { type: 'application/pdf' });
+                const url = URL.createObjectURL(finalBlob);
+                
+                if (openInNewTab) {
+                    if (newTab) newTab.location.href = url; else window.open(url, '_blank');
+                } else {
+                    const l = document.createElement('a'); l.download = `${f}.pdf`; l.href = url; l.click();
+                }
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+            } catch (e) { 
+                console.error("Export failed", e); if (newTab) newTab.close();
+            } finally { isDownloadingPDF = false; }
+        }
+
+        let edTool = 'pen', edColor = '#ef4444', edSize = 5;
+        let edIsDrawing = false, edStartX = 0, edStartY = 0, edCurrentX = 0, edCurrentY = 0;
+        let edUndoStack = [], edRedoStack = [];
+        let edTarget = { imgIdx: -1, blockIdx: -1, imgEl: null, drawC: null, tempC: null };
+        let edOriginalSrc = null;
+        
+        function showEditorToolbar() {
+            const toolbar = document.getElementById('floatingImageToolbar');
+            toolbar.classList.remove('hidden');
+            void toolbar.offsetWidth; 
+            requestAnimationFrame(() => {
+                toolbar.classList.remove('scale-90', 'opacity-0');
+                toolbar.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function startInlineEditor(img, imgIdx, blockIdx, isReinit = false) {
+            if (edTarget.imgIdx !== -1 && !isReinit) closeInlineEditor(false); 
+
+            if (!isReinit) {
+                edOriginalSrc = img.src;
+                edUndoStack = []; 
+                edRedoStack = [];
+            }
+
+            edTarget = { imgEl: img, imgIdx, blockIdx, drawC: null, tempC: null };
+            activeImageIdx = imgIdx; activeBlockIdx = blockIdx; activeImageIsGroup = (blockIdx !== -1);
+
+            const wrapper = img.parentElement; wrapper.classList.add('is-editing'); 
+            const style = window.getComputedStyle(img), br = style.borderRadius;
+
+            const drawC = document.createElement('canvas');
+            drawC.className = "absolute top-0 left-0 w-full h-full z-20 pointer-events-none";
+            drawC.style.borderRadius = br; drawC.width = img.clientWidth; drawC.height = img.clientHeight;
+            
+            const tempC = document.createElement('canvas');
+            tempC.className = "editor-canvas-layer absolute top-0 left-0 w-full h-full z-30 cursor-crosshair";
+            tempC.style.borderRadius = br; tempC.width = img.clientWidth; tempC.height = img.clientHeight;
+            
+            tempC.oncontextmenu = (e) => { e.preventDefault(); showEditorToolbar(); };
+
+            wrapper.appendChild(drawC); wrapper.appendChild(tempC);
+            edTarget.drawC = drawC; edTarget.tempC = tempC;
+            
+            if(!isReinit) saveEdState();
+            initEdEvents(tempC);
+        }
+
+        function closeInlineEditor(save = false) {
+            if (edTarget.imgIdx === -1) return;
+            const wrapper = edTarget.imgEl ? edTarget.imgEl.parentElement : null;
+            if (wrapper) {
+                wrapper.classList.remove('is-editing');
+                if (edTarget.drawC && wrapper.contains(edTarget.drawC)) wrapper.removeChild(edTarget.drawC);
+                if (edTarget.tempC && wrapper.contains(edTarget.tempC)) wrapper.removeChild(edTarget.tempC);
+            }
+            
+            // Revert changes if cancelled
+            if (!save && edOriginalSrc && edTarget.imgEl) {
+                edTarget.imgEl.src = edOriginalSrc;
+            }
+            edOriginalSrc = null;
+
+            const toolbar = document.getElementById('floatingImageToolbar');
+            toolbar.classList.remove('scale-100', 'opacity-100');
+            toolbar.classList.add('scale-90', 'opacity-0');
+            
+            setTimeout(() => {
+                toolbar.classList.add('hidden');
+                closeEdMenus();
+            }, 200);
+
+            edTarget = { imgIdx: -1, blockIdx: -1, imgEl: null, drawC: null, tempC: null };
+            activeImageIdx = -1; activeBlockIdx = -1;
+        }
+
+        function saveInlineEditor() {
+            if (edTarget.imgIdx === -1) return;
+            const imgObj = edTarget.blockIdx === -1 ? uploadedImages[edTarget.imgIdx] : activeBlocks[edTarget.blockIdx].images[edTarget.imgIdx];
+            const imgEl = edTarget.imgEl, drawC = edTarget.drawC;
+
+            const resultC = document.createElement('canvas');
+            resultC.width = imgEl.naturalWidth; resultC.height = imgEl.naturalHeight;
+            const ctx = resultC.getContext('2d');
+            
+            ctx.drawImage(imgEl, 0, 0, resultC.width, resultC.height);
+            ctx.drawImage(drawC, 0, 0, resultC.width, resultC.height);
+            
+            const newSrc = resultC.toDataURL('image/webp', 0.85);
+            pushImageHistory(); imgObj.src = newSrc;
+            
+            closeInlineEditor(true); updatePreview(); syncCardState();
+        }
+
+        document.querySelectorAll('.ed-tool-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('.ed-tool-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('text-[var(--theme-color)]'); });
+                const tBtn = e.currentTarget; tBtn.classList.add('active'); tBtn.style.color = 'var(--theme-color)';
+                edTool = tBtn.dataset.tool;
+            };
+        });
+        
+        document.querySelectorAll('.ed-color-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('.ed-color-btn').forEach(b => b.classList.remove('scale-110', 'border-white'));
+                e.currentTarget.classList.add('scale-110', 'border-white');
+                edColor = e.currentTarget.dataset.color; document.getElementById('edCurrentColor').style.backgroundColor = edColor;
+            };
+        });
+        
+        document.getElementById('edSizeSlider').oninput = (e) => { edSize = e.target.value; };
+
+        function initEdEvents(tempC) {
+            const getPos = (e, canvas) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+            
+            tempC.addEventListener('mousedown', (e) => { if(e.button === 0) edStart(getPos(e, tempC)); });
+            tempC.addEventListener('touchstart', (e) => { e.preventDefault(); edStart(getPos(e, tempC)); }, {passive: false});
+            tempC.addEventListener('mousemove', (e) => edMove(getPos(e, tempC)));
+            tempC.addEventListener('touchmove', (e) => { e.preventDefault(); edMove(getPos(e, tempC)); }, {passive: false});
+            tempC.addEventListener('mouseup', (e) => { if(e.button === 0) edEnd(); });
+            tempC.addEventListener('touchend', edEnd);
+            tempC.addEventListener('mouseout', edEnd);
+        }
+
+        function edStart(pos) {
+            edIsDrawing = true; 
+            edStartX = pos.x; edStartY = pos.y;
+            edCurrentX = pos.x; edCurrentY = pos.y;
+
+            const drawCtx = edTarget.drawC.getContext('2d');
+            drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round'; drawCtx.lineWidth = edSize;
+            
+            if (edTool === 'eraser') { 
+                drawCtx.globalCompositeOperation = 'destination-out'; drawCtx.strokeStyle = 'rgba(0,0,0,1)'; 
+            } else if (edTool !== 'crop') { 
+                drawCtx.globalCompositeOperation = 'source-over'; drawCtx.strokeStyle = edTool === 'highlighter' ? hexToRgba(edColor, 0.005) : edColor; 
+            }
+            
+            if (edTool === 'pen' || edTool === 'highlighter' || edTool === 'eraser') { 
+                drawCtx.beginPath(); drawCtx.moveTo(pos.x, pos.y); 
+            }
+        }
+
+        function edMove(pos) {
+            if (!edIsDrawing) return;
+            edCurrentX = pos.x; edCurrentY = pos.y;
+            const drawCtx = edTarget.drawC.getContext('2d'), tempCtx = edTarget.tempC.getContext('2d'), tempC = edTarget.tempC;
+            
+            if (edTool === 'pen' || edTool === 'highlighter' || edTool === 'eraser') {
+                drawCtx.lineTo(pos.x, pos.y); drawCtx.stroke();
+            } else {
+                tempCtx.clearRect(0, 0, tempC.width, tempC.height);
+                
+                if (edTool === 'crop') {
+                    tempCtx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                    tempCtx.fillRect(0, 0, tempC.width, tempC.height);
+                    
+                    const x = Math.min(edStartX, pos.x);
+                    const y = Math.min(edStartY, pos.y);
+                    const w = Math.abs(pos.x - edStartX);
+                    const h = Math.abs(pos.y - edStartY);
+                    
+                    tempCtx.clearRect(x, y, w, h);
+                    tempCtx.setLineDash([5, 5]);
+                    tempCtx.lineWidth = 2;
+                    tempCtx.strokeStyle = 'white';
+                    tempCtx.strokeRect(x, y, w, h);
+                    tempCtx.setLineDash([]);
+                } else {
+                    tempCtx.lineCap = 'round'; tempCtx.lineJoin = 'round'; tempCtx.lineWidth = edSize;
+                    tempCtx.strokeStyle = edTool === 'highlighter' ? hexToRgba(edColor, 0.2) : edColor;
+                    tempCtx.beginPath();
+                    if (edTool === 'rect') tempCtx.rect(edStartX, edStartY, pos.x - edStartX, pos.y - edStartY);
+                    else if (edTool === 'circle') { const radius = Math.sqrt(Math.pow(pos.x - edStartX, 2) + Math.pow(pos.y - edStartY, 2)); tempCtx.arc(edStartX, edStartY, radius, 0, 2 * Math.PI); } 
+                    else if (edTool === 'arrow') drawEdArrow(tempCtx, edStartX, edStartY, pos.x, pos.y);
+                    if (edTool !== 'arrow') tempCtx.stroke();
+                }
+            }
+        }
+
+        function edEnd() {
+            if (!edIsDrawing) return; edIsDrawing = false;
+            
+            if (edTool === 'crop') {
+                const x = Math.min(edStartX, edCurrentX);
+                const y = Math.min(edStartY, edCurrentY);
+                const w = Math.abs(edCurrentX - edStartX);
+                const h = Math.abs(edCurrentY - edStartY);
+                
+                const tempC = edTarget.tempC;
+                const tempCtx = tempC.getContext('2d');
+                tempCtx.clearRect(0, 0, tempC.width, tempC.height);
+                
+                if (w > 10 && h > 10) {
+                    const imgEl = edTarget.imgEl;
+                    const drawC = edTarget.drawC;
+                    
+                    const scaleX = imgEl.naturalWidth / imgEl.clientWidth;
+                    const scaleY = imgEl.naturalHeight / imgEl.clientHeight;
+                    
+                    const sx = x * scaleX;
+                    const sy = y * scaleY;
+                    const sw = w * scaleX;
+                    const sh = h * scaleY;
+                    
+                    const comp = document.createElement('canvas');
+                    comp.width = imgEl.naturalWidth; comp.height = imgEl.naturalHeight;
+                    const compCtx = comp.getContext('2d');
+                    compCtx.drawImage(imgEl, 0, 0);
+                    compCtx.drawImage(drawC, 0, 0);
+                    
+                    const cropC = document.createElement('canvas');
+                    cropC.width = sw; cropC.height = sh;
+                    const cropCtx = cropC.getContext('2d');
+                    cropCtx.drawImage(comp, sx, sy, sw, sh, 0, 0, sw, sh);
+                    
+                    imgEl.src = cropC.toDataURL('image/png');
+                    
+                    const wrapper = edTarget.imgEl.parentElement;
+                    if (edTarget.drawC && wrapper.contains(edTarget.drawC)) wrapper.removeChild(edTarget.drawC);
+                    if (edTarget.tempC && wrapper.contains(edTarget.tempC)) wrapper.removeChild(edTarget.tempC);
+                    
+                    imgEl.onload = () => {
+                        startInlineEditor(edTarget.imgEl, edTarget.imgIdx, edTarget.blockIdx, true);
+                        imgEl.onload = null;
+                    };
+                }
+                
+                edTool = 'pen';
+                document.querySelectorAll('.ed-tool-btn').forEach(b => { b.classList.remove('active'); b.style.color = ''; });
+                const penBtn = document.querySelector('.ed-tool-btn[data-tool="pen"]');
+                if(penBtn) { penBtn.classList.add('active'); penBtn.style.color = 'var(--theme-color)'; }
+
+            } else if (edTool === 'rect' || edTool === 'circle' || edTool === 'arrow') {
+                const drawCtx = edTarget.drawC.getContext('2d'), tempC = edTarget.tempC, tempCtx = tempC.getContext('2d');
+                drawCtx.globalCompositeOperation = 'source-over'; drawCtx.drawImage(tempC, 0, 0);
+                tempCtx.clearRect(0, 0, tempC.width, tempC.height);
+                saveEdState();
+            } else {
+                saveEdState();
+            }
+        }
+
+        // Feature: Rotate Inline
+        window.edRotate = function() {
+            if (edTarget.imgIdx === -1) return;
+            const imgEl = edTarget.imgEl;
+            const drawC = edTarget.drawC;
+            
+            const w = imgEl.naturalWidth;
+            const h = imgEl.naturalHeight;
+            
+            const comp = document.createElement('canvas');
+            comp.width = w; comp.height = h;
+            const compCtx = comp.getContext('2d');
+            compCtx.drawImage(imgEl, 0, 0, w, h);
+            compCtx.drawImage(drawC, 0, 0, w, h);
+            
+            const rotC = document.createElement('canvas');
+            rotC.width = h; rotC.height = w;
+            const rotCtx = rotC.getContext('2d');
+            rotCtx.translate(h / 2, w / 2);
+            rotCtx.rotate((90 * Math.PI) / 180);
+            rotCtx.drawImage(comp, -w / 2, -h / 2);
+            
+            imgEl.src = rotC.toDataURL('image/png');
+            
+            const wrapper = edTarget.imgEl.parentElement;
+            if (edTarget.drawC && wrapper.contains(edTarget.drawC)) wrapper.removeChild(edTarget.drawC);
+            if (edTarget.tempC && wrapper.contains(edTarget.tempC)) wrapper.removeChild(edTarget.tempC);
+
+            imgEl.onload = () => {
+                startInlineEditor(edTarget.imgEl, edTarget.imgIdx, edTarget.blockIdx, true);
+                imgEl.onload = null;
+            };
+        };
+
+        // Feature: Clear Canvas Inline
+        window.edClearCanvas = function() {
+            if (edTarget.drawC) {
+                const ctx = edTarget.drawC.getContext('2d');
+                ctx.clearRect(0, 0, edTarget.drawC.width, edTarget.drawC.height);
+                saveEdState();
+            }
+        };
+
+        function drawEdArrow(ctx, fromX, fromY, toX, toY) {
+            const headlen = Math.max(10, edSize * 2), dx = toX - fromX, dy = toY - fromY, angle = Math.atan2(dy, dx);
+            ctx.moveTo(fromX, fromY); ctx.lineTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY); ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        function saveEdState() {
+            if (!edTarget.drawC) return;
+            edUndoStack.push(edTarget.drawC.toDataURL());
+            if (edUndoStack.length > 20) edUndoStack.shift(); edRedoStack = [];
+        }
+
+        function edUndo() {
+            if (edUndoStack.length > 1) { edRedoStack.push(edUndoStack.pop()); restoreEdState(edUndoStack[edUndoStack.length - 1]); }
+        }
+
+        function edRedo() {
+            if (edRedoStack.length > 0) { const state = edRedoStack.pop(); edUndoStack.push(state); restoreEdState(state); }
+        }
+
+        function restoreEdState(dataUrl) {
+            if (!edTarget.drawC) return;
+            const ctx = edTarget.drawC.getContext('2d'), img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0, 0, edTarget.drawC.width, edTarget.drawC.height);
+                ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(img, 0, 0);
+            };
+            img.src = dataUrl;
+        }
+
+    </script>
+
+    <!-- Firebase SDK (ES Modules) - Storage Removed -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgqI-I1OiK7_QVwQ8dJ_fTsF0asyx5VsU",
+            authDomain: "notion-69.firebaseapp.com",
+            projectId: "notion-69",
+            storageBucket: "notion-69.firebasestorage.app",
+            messagingSenderId: "824147111752",
+            appId: "1:824147111752:web:8c31f1d08bce7da6fe8d7d",
+            measurementId: "G-JY03PCDJBC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        
+        // Disabled Storage modules to fallback to Base64 locally via Firestore
+        window.storage = null; 
+        
+        window.GoogleProvider = new GoogleAuthProvider();
+        window.currentUser = null;
+        
+        window.fbSetDoc = setDoc;
+        window.fbDoc = doc;
+
+        window.triggerGoogleLogin = () => {
+            signInWithPopup(window.auth, window.GoogleProvider).catch(err => {
+                console.error("Login Error:", err);
+                showToast("Login failed.");
+            });
+        };
+        
+        window.triggerGoogleLogout = () => {
+            signOut(window.auth).then(() => {
+                window.currentUser = null;
+                showToast("Successfully logged out.");
+                document.getElementById('authBtnText').innerText = "Login";
+            });
+        };
+
+        onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                showToast("Welcome, " + user.displayName);
+                const authBtn = document.getElementById('authBtnText');
+                if(authBtn) authBtn.innerText = "Logout";
+
+                try {
+                    const docRef = doc(window.db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists() && docSnap.data().cards) {
+                        cards = docSnap.data().cards;
+                        await localforage.setItem('ali_dashboard_cards', cards);
+                        if(cards.length > 0) {
+                            activeCardId = cards[0].id;
+                            populateHeaderCardsList();
+                            loadCurrentCard();
+                        }
+                    } else {
+                        await setDoc(docRef, { cards: cards, lastUpdated: new Date() });
+                    }
+                } catch(e) {
+                    console.error("Firebase sync error:", e);
+                }
+            } else {
+                window.currentUser = null;
+                const authBtn = document.getElementById('authBtnText');
+                if(authBtn) authBtn.innerText = "Login";
+            }
+        });
+    </script>
+</body>
+</html>
