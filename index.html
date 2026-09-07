@@ -146,6 +146,8 @@
         #cardWord ul, #cardDef ul, .card-extra-def-input ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.25rem; }
         #cardWord ol, #cardDef ol, .card-extra-def-input ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.25rem; }
         #cardWord li, #cardDef li, .card-extra-def-input li { margin-bottom: 0.25rem; }
+        
+        a[href] { color: var(--theme-color); text-decoration: underline; cursor: pointer; }
 
         /* ContentEditable Placeholder Styling */
         [contenteditable]:empty:before {
@@ -244,6 +246,7 @@
                                         <div class="w-px h-4 bg-gray-700 mx-1"></div>
                                         <button onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-bold" aria-label="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
                                         <button onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-underline" aria-label="Underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                                        <button onmousedown="event.preventDefault(); insertLink()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Hyperlink"><i data-lucide="link" class="w-4 h-4"></i></button>
                                         
                                         <div class="relative group/highlightpicker">
                                             <button onmousedown="event.preventDefault(); toggleHighlightColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-highlight" aria-label="Highlight Color"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
@@ -287,7 +290,7 @@
                                         <button onmousedown="event.preventDefault(); execFormat('insertOrderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ol" aria-label="Ordered List"><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
                                         <button onmousedown="event.preventDefault(); sortSelectedTextAZ()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Sort A-Z" title="Sort A-Z"><i data-lucide="arrow-down-a-z" class="w-4 h-4"></i></button>
 
-                                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                        <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
                                         <button onmousedown="event.preventDefault(); copyNoteText(event, 'cardDef')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Copy Text" title="Copy Text"><i data-lucide="copy" class="w-4 h-4"></i></button>
                                         <button onmousedown="event.preventDefault(); downloadNoteText('cardDef')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" aria-label="Download .txt" title="Download .txt"><i data-lucide="file-down" class="w-4 h-4"></i></button>
                                         
@@ -365,9 +368,15 @@
         <button class="ed-tool-btn active p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="pen" title="Pen"><i data-lucide="pen-tool" class="w-4 h-4"></i></button>
         <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="highlighter" title="Highlighter"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
         <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="eraser" title="Eraser"><i data-lucide="eraser" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="text" title="Text Box"><i data-lucide="type" class="w-4 h-4"></i></button>
+        
+        <div class="w-px h-5 bg-black/10 mx-1"></div>
+        
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="line" title="Straight Line"><i data-lucide="minus" class="w-4 h-4"></i></button>
+        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="arrow" title="Arrow"><i data-lucide="move-up-right" class="w-4 h-4"></i></button>
         <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="rect" title="Rectangle"><i data-lucide="square" class="w-4 h-4"></i></button>
         <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="circle" title="Circle"><i data-lucide="circle" class="w-4 h-4"></i></button>
-        <button class="ed-tool-btn p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" data-tool="arrow" title="Arrow"><i data-lucide="move-up-right" class="w-4 h-4"></i></button>
+        <button id="edFillToggleBtn" onclick="toggleFill()" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" title="Toggle Fill/Stroke"><i data-lucide="paint-bucket" class="w-4 h-4"></i></button>
 
         <div class="w-px h-5 bg-black/10 mx-1"></div>
 
@@ -425,9 +434,9 @@
             <button id="cardDownloadBtnCtx" onclick="downloadPNG()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Download Image"><i data-lucide="image" class="w-4 h-4"></i></button>
             <button id="cardDownloadPdfBtnCtx" onclick="downloadPDF()" oncontextmenu="event.preventDefault(); downloadPDF(true)" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Download PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
             <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-0.5"></div>
-            <!-- Theme Toggle Button -->
-            <button onclick="toggleDarkMode()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Theme Toggle">
-                <i data-lucide="moon" id="themeToggleIcon" class="w-4 h-4"></i>
+            <!-- Sync Button -->
+            <button onclick="manualSync()" class="p-1.5 hover:bg-white dark:hover:bg-[#333] rounded-lg transition-transform hover:scale-105 text-gray-500 hover:text-[var(--theme-color)]" title="Sync Data">
+                <i data-lucide="refresh-cw" id="syncIcon" class="w-4 h-4"></i>
             </button>
         </div>
 
@@ -510,6 +519,40 @@
     <!-- Custom Toast Message -->
     <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-xl shadow-lg z-[999] transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium text-center"></div>
 
+    <!-- In-App Link Modal -->
+    <div id="linkModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-[#181818] border border-[#d0ebf0] dark:border-[#333] rounded-2xl shadow-2xl w-11/12 max-w-sm p-5 transform transition-transform scale-95 origin-center duration-150">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4">Insert Link</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">URL</label>
+                    <input type="text" id="linkModalUrl" class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#444] rounded-lg focus:outline-none focus:border-[var(--theme-color)] transition-colors" placeholder="https://..." value="https://">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeLinkModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#333] rounded-lg transition-colors">Cancel</button>
+                <button onclick="confirmInsertLink()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Text Modal -->
+    <div id="imageTextModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-[#181818] border border-[#d0ebf0] dark:border-[#333] rounded-2xl shadow-2xl w-11/12 max-w-sm p-5 transform transition-transform scale-95 origin-center duration-150">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-4">Add Text to Image</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Text</label>
+                    <input type="text" id="imageTextModalInput" class="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#444] rounded-lg focus:outline-none focus:border-[var(--theme-color)] transition-colors" placeholder="Enter your text...">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeImageTextModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-[#333] rounded-lg transition-colors">Cancel</button>
+                <button onclick="confirmImageText()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Add</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Utils
         function showToast(msg) {
@@ -528,30 +571,18 @@
             };
         }
 
-        // Dark Mode Logic
+        // Dark Mode Logic (Kept logic active internally if user system changes, but removed button per request)
         let isDarkMode = localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
         function applyTheme() {
-            const icon = document.getElementById('themeToggleIcon');
             if (isDarkMode) {
                 document.documentElement.classList.add('dark');
-                if(icon) icon.setAttribute('data-lucide', 'sun');
             } else {
                 document.documentElement.classList.remove('dark');
-                if(icon) icon.setAttribute('data-lucide', 'moon');
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
-        function toggleDarkMode() {
-            isDarkMode = !isDarkMode;
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            applyTheme();
-        }
 
-        const categoryColors = {
-            "Principles of Flight": "#6366f1", "Meteorology": "#0ea5e9", "Navigation": "#10b981", "Flight Planning and Monitoring": "#f59e0b",
-            "Aircraft General Knowledge": "#475569", "Human Performance": "#f43f5e", "Air Law": "#8b5cf6", "Operational Procedures": "#06b6d4",
-            "Mass & Balance": "#f97316", "Performance": "#84cc16", "Communications": "#14b8a6"
-        };
+        const categoryColors = {};
         
         const fontMap = {
             'Caveat': "'Caveat', cursive",
@@ -574,6 +605,110 @@
         
         let imageUndoStack = [], imageRedoStack = [], isImageUndoingRedoing = false, stateBeforeDrag = null;
         let recognition = null, isRecording = false, activeMicBtn = null;
+        let edFillShape = false;
+        let savedSelection = null;
+
+        function saveSelection() {
+            if (window.getSelection) {
+                const sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    savedSelection = sel.getRangeAt(0);
+                }
+            }
+        }
+
+        function restoreSelection() {
+            if (savedSelection && window.getSelection) {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(savedSelection);
+            }
+        }
+
+        window.insertLink = function() {
+            saveSelection();
+            const modal = document.getElementById('linkModal');
+            const urlInput = document.getElementById('linkModalUrl');
+            urlInput.value = 'https://';
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+                urlInput.focus();
+            }, 10);
+        };
+
+        window.closeLinkModal = function() {
+            const modal = document.getElementById('linkModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        };
+
+        window.confirmInsertLink = function() {
+            const url = document.getElementById('linkModalUrl').value.trim();
+            closeLinkModal();
+            if (url && url !== 'https://') {
+                restoreSelection();
+                execFormat('createLink', url);
+            }
+        };
+
+        window.openImageTextModal = function() {
+            const modal = document.getElementById('imageTextModal');
+            const input = document.getElementById('imageTextModalInput');
+            input.value = '';
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+                input.focus();
+            }, 10);
+        };
+
+        window.closeImageTextModal = function() {
+            const modal = document.getElementById('imageTextModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        };
+
+        window.confirmImageText = function() {
+            const txt = document.getElementById('imageTextModalInput').value.trim();
+            closeImageTextModal();
+            if (txt) {
+                const drawCtx = edTarget.drawC.getContext('2d');
+                drawCtx.font = `bold ${Math.max(16, edSize * 4)}px 'Poppins', sans-serif`;
+                drawCtx.fillStyle = edColor;
+                drawCtx.textBaseline = 'top';
+                drawCtx.fillText(txt, edStartX, edStartY);
+                saveEdState();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const textInput = document.getElementById('imageTextModalInput');
+            if (textInput) {
+                textInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        confirmImageText();
+                    }
+                });
+            }
+        });
+
+        window.toggleFill = function() {
+            edFillShape = !edFillShape;
+            const btn = document.getElementById('edFillToggleBtn');
+            if (edFillShape) {
+                btn.classList.add('bg-black/20');
+                btn.style.color = 'var(--theme-color)';
+            } else {
+                btn.classList.remove('bg-black/20');
+                btn.style.color = '';
+            }
+        };
 
         window.closePreviewMenu = function() {
             const menu = document.getElementById('floatingPreviewMenu');
@@ -837,6 +972,39 @@
              } 
         };
 
+        async function manualSync() {
+            showToast("Syncing data...");
+            const syncIcon = document.getElementById('syncIcon');
+            if(syncIcon) syncIcon.classList.add('animate-spin');
+            
+            try {
+                await saveCardsToStorageNow();
+                setTimeout(() => {
+                    if(syncIcon) syncIcon.classList.remove('animate-spin');
+                    showToast("Sync complete!");
+                }, 500); 
+            } catch (err) {
+                if(syncIcon) syncIcon.classList.remove('animate-spin');
+                showToast("Sync failed!");
+            }
+        }
+
+        window.updateSyncIcons = function() {
+            cards.forEach(c => {
+                const iconEl = document.getElementById(`sync-icon-${c.id}`);
+                if (iconEl) {
+                    const isSynced = window.currentUser ? c.isSynced : false;
+                    const iconName = isSynced ? 'cloud' : 'cloud-off';
+                    if (iconEl.getAttribute('data-lucide') !== iconName) {
+                        iconEl.setAttribute('data-lucide', iconName);
+                        iconEl.className = `w-3.5 h-3.5 shrink-0 ${isSynced ? 'text-emerald-500' : 'text-orange-400'}`;
+                        iconEl.title = isSynced ? 'Synced to Cloud' : 'Pending Sync / Offline';
+                    }
+                }
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+
         async function saveCardsToStorageNow() {
             try {
                 // Offline fallback save
@@ -848,10 +1016,17 @@
                         cards: cards,
                         lastUpdated: new Date()
                     });
+                    cards.forEach(c => c.isSynced = true);
+                } else {
+                    cards.forEach(c => c.isSynced = false);
                 }
             } catch (e) {
                 console.warn("Storage error", e);
+                cards.forEach(c => c.isSynced = false);
                 showToast("Save error!");
+                throw e; // Pass to manualSync
+            } finally {
+                if (window.updateSyncIcons) window.updateSyncIcons();
             }
         }
         const debouncedSave = debounce(saveCardsToStorageNow, 700);
@@ -869,6 +1044,7 @@
             } else {
                 cards.forEach((c) => {
                     const isActive = (c.id === activeCardId);
+                    const isSynced = window.currentUser ? c.isSynced : false;
                     const item = document.createElement('div');
                     
                     let itemClass = 'dropdown-item flex items-center justify-between group/carditem transition-all ';
@@ -882,10 +1058,13 @@
                     const leftPart = document.createElement('div');
                     leftPart.className = 'flex items-center gap-2 overflow-hidden flex-1';
                     
-                    leftPart.innerHTML = `<i data-lucide="grip-vertical" class="w-3 h-3 opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-50 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0 transition-opacity text-gray-400 dark:text-gray-500"></i><i data-lucide="${isActive ? 'check-circle' : 'layout-template'}" class="w-4 h-4 shrink-0"></i> <span class="truncate ${isActive ? 'font-bold' : ''}">${c.title.trim() || 'Card ' + (cards.indexOf(c) + 1)}</span>`;
+                    leftPart.innerHTML = `<i data-lucide="grip-vertical" class="w-3 h-3 opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-50 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0 transition-opacity text-gray-400 dark:text-gray-500"></i>
+                    <i data-lucide="${isActive ? 'check-circle' : 'layout-template'}" class="w-4 h-4 shrink-0"></i> 
+                    <span class="truncate flex-1 ${isActive ? 'font-bold' : ''}">${c.title.trim() || 'Card ' + (cards.indexOf(c) + 1)}</span>
+                    <i id="sync-icon-${c.id}" data-lucide="${isSynced ? 'cloud' : 'cloud-off'}" class="w-3.5 h-3.5 shrink-0 ${isSynced ? 'text-emerald-500' : 'text-orange-400'}" title="${isSynced ? 'Synced to Cloud' : 'Pending Sync / Offline'}"></i>`;
                     
                     const delBtn = document.createElement('button');
-                    delBtn.className = 'text-gray-400 hover:text-rose-500 transition-colors p-1.5 md:p-1 rounded-md opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-100 outline-none shrink-0';
+                    delBtn.className = 'text-gray-400 hover:text-rose-500 transition-colors p-1.5 md:p-1 rounded-md opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-100 outline-none shrink-0 ml-1';
                     delBtn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4 md:w-3.5 md:h-3.5"></i>';
                     delBtn.setAttribute('aria-label', 'Delete Card');
                     if (cards.length <= 1) delBtn.style.display = 'none';
@@ -973,6 +1152,8 @@
                 menu.style.transition = "transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.15s ease-out";
                 menu.style.transform = "scale(1)";
                 menu.style.opacity = "1";
+                
+                if (window.updateSyncIcons) window.updateSyncIcons();
             });
         };
 
@@ -1129,6 +1310,7 @@
                         const jsonStr = text.substring(markerIndex + 16);
                         const cardData = JSON.parse(jsonStr);
                         cardData.id = 'card_' + Date.now() + Math.random().toString(36).substr(2, 9);
+                        cardData.isSynced = false;
                         cards.push(cardData);
                         await saveCardsToStorageNow();
                         switchCard(cardData.id);
@@ -1239,7 +1421,8 @@
                 manualItem.onclick = (e) => { e.stopPropagation(); restoreCategory(); catContainer.classList.add('hidden'); document.getElementById('categoryChevron').classList.remove('rotate-180'); };
                 catContainer.appendChild(manualItem);
 
-                ["-", ...Object.keys(categoryColors)].forEach(cat => {
+                // Added only the empty ("-") category as requested
+                ["-"].forEach(cat => {
                     const item = document.createElement('div');
                     item.className = 'dropdown-item text-gray-700 dark:text-gray-300';
                     item.innerText = cat;
@@ -1657,6 +1840,12 @@
                 if (dragImageIdx !== -1 && changed) pushImageHistory(stateBeforeDrag);
                 
                 isDraggingImage = false; dragImageIdx = -1; dragBlockIdx = -1; dragIsGroup = false; dragWithCtrl = false;
+                
+                // Once done modifying, sync status falls to false
+                const card = cards.find(c => c.id === activeCardId);
+                if (card) card.isSynced = false;
+                if (window.updateSyncIcons) window.updateSyncIcons();
+
                 updatePreview(); syncCardState();
             } 
         }
@@ -1757,6 +1946,11 @@
                     } else {
                         uploadedImages.push({ src: compressedDataUrl, scale: 100, border: null, align: 'center', translateX: 0 }); 
                     }
+                    
+                    const card = cards.find(c => c.id === activeCardId);
+                    if (card) card.isSynced = false;
+                    if (window.updateSyncIcons) window.updateSyncIcons();
+                    
                     updatePreview(); 
                 };
                 img.src = e.target.result;
@@ -1798,7 +1992,8 @@
                 color: { hex: genColor, hue: genHue, sat: genSat, bri: genBri }, 
                 textSize: 32, defSize: 24, imageBorder: 2, imageCols: 0, blend: 20, cardBorder: 4,
                 fontFamily: 'Caveat',
-                showTitlePlaceholder: true, showDefPlaceholder: false 
+                showTitlePlaceholder: true, showDefPlaceholder: false,
+                isSynced: false
             }; 
             cards.push(newCard); await saveCardsToStorageNow(); switchCard(newCard.id); 
         }
@@ -1851,6 +2046,9 @@
             card.fontFamily = currentFontFamily;
             card.showTitlePlaceholder = showTitlePlaceholder; card.showDefPlaceholder = showDefPlaceholder; 
             
+            card.isSynced = false;
+            if (window.updateSyncIcons) window.updateSyncIcons();
+
             debouncedSave();
         }
 
@@ -1984,6 +2182,7 @@
                                     <div class="w-px h-4 bg-gray-700 mx-1"></div>
                                     <button onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); insertLink()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Hyperlink"><i data-lucide="link" class="w-4 h-4"></i></button>
                                     
                                     <div class="relative group/highlightpicker">
                                         <button onmousedown="event.preventDefault(); toggleHighlightColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-highlight" aria-label="Highlight Color"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
@@ -2463,7 +2662,7 @@
             
             if (edTool === 'pen' || edTool === 'highlighter' || edTool === 'eraser') {
                 drawCtx.lineTo(pos.x, pos.y); drawCtx.stroke();
-            } else {
+            } else if (edTool !== 'text') {
                 tempCtx.clearRect(0, 0, tempC.width, tempC.height);
                 
                 if (edTool === 'crop') {
@@ -2484,11 +2683,19 @@
                 } else {
                     tempCtx.lineCap = 'round'; tempCtx.lineJoin = 'round'; tempCtx.lineWidth = edSize;
                     tempCtx.strokeStyle = edTool === 'highlighter' ? hexToRgba(edColor, 0.2) : edColor;
+                    tempCtx.fillStyle = edTool === 'highlighter' ? hexToRgba(edColor, 0.2) : edColor;
                     tempCtx.beginPath();
+                    
                     if (edTool === 'rect') tempCtx.rect(edStartX, edStartY, pos.x - edStartX, pos.y - edStartY);
                     else if (edTool === 'circle') { const radius = Math.sqrt(Math.pow(pos.x - edStartX, 2) + Math.pow(pos.y - edStartY, 2)); tempCtx.arc(edStartX, edStartY, radius, 0, 2 * Math.PI); } 
                     else if (edTool === 'arrow') drawEdArrow(tempCtx, edStartX, edStartY, pos.x, pos.y);
-                    if (edTool !== 'arrow') tempCtx.stroke();
+                    else if (edTool === 'line') { tempCtx.moveTo(edStartX, edStartY); tempCtx.lineTo(pos.x, pos.y); }
+                    
+                    if (edTool === 'rect' || edTool === 'circle') {
+                        if (edFillShape) tempCtx.fill(); else tempCtx.stroke();
+                    } else if (edTool === 'arrow' || edTool === 'line') {
+                        if (edTool !== 'arrow') tempCtx.stroke(); 
+                    }
                 }
             }
         }
@@ -2546,7 +2753,9 @@
                 const penBtn = document.querySelector('.ed-tool-btn[data-tool="pen"]');
                 if(penBtn) { penBtn.classList.add('active'); penBtn.style.color = 'var(--theme-color)'; }
 
-            } else if (edTool === 'rect' || edTool === 'circle' || edTool === 'arrow') {
+            } else if (edTool === 'text') {
+                openImageTextModal();
+            } else if (edTool === 'rect' || edTool === 'circle' || edTool === 'arrow' || edTool === 'line') {
                 const drawCtx = edTarget.drawC.getContext('2d'), tempC = edTarget.tempC, tempCtx = tempC.getContext('2d');
                 drawCtx.globalCompositeOperation = 'source-over'; drawCtx.drawImage(tempC, 0, 0);
                 tempCtx.clearRect(0, 0, tempC.width, tempC.height);
@@ -2640,7 +2849,7 @@
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBgqI-I10iK7_QVwQ8dJ_fTsF0asyx5VsU",
+            apiKey: "AIzaSyBgqI-I1OiK7_QVwQ8dJ_fTsF0asyx5VsU",
             authDomain: "notion-69.firebaseapp.com",
             projectId: "notion-69",
             storageBucket: "notion-69.firebasestorage.app",
@@ -2675,6 +2884,7 @@
                 window.currentUser = null;
                 showToast("Successfully logged out.");
                 document.getElementById('authBtnText').innerText = "Login";
+                if (window.updateSyncIcons) window.updateSyncIcons();
             });
         };
 
@@ -2690,6 +2900,7 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists() && docSnap.data().cards) {
                         cards = docSnap.data().cards;
+                        cards.forEach(c => c.isSynced = true);
                         await localforage.setItem('ali_dashboard_cards', cards);
                         if(cards.length > 0) {
                             activeCardId = cards[0].id;
@@ -2698,14 +2909,18 @@
                         }
                     } else {
                         await setDoc(docRef, { cards: cards, lastUpdated: new Date() });
+                        cards.forEach(c => c.isSynced = true);
                     }
                 } catch(e) {
                     console.error("Firebase sync error:", e);
+                } finally {
+                    if (window.updateSyncIcons) window.updateSyncIcons();
                 }
             } else {
                 window.currentUser = null;
                 const authBtn = document.getElementById('authBtnText');
                 if(authBtn) authBtn.innerText = "Login";
+                if (window.updateSyncIcons) window.updateSyncIcons();
             }
         });
     </script>
