@@ -44,23 +44,23 @@
             background-color: #e8f6f8; 
             color: #222222; 
             overflow-x: hidden; 
-            transition: background-color 0.3s ease, color 0.3s ease; 
+            transition: background-color 0.2s ease, color 0.2s ease; 
         }
         
         .theme-blend-bg-card { background-color: var(--theme-blend, #ffffff) !important; }
         .theme-blend-bg { background-color: var(--theme-blend, #ffffff) !important; }
 
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
+            from { opacity: 0; transform: translateY(5px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.15s ease-out forwards; }
         
         input, textarea, select { 
             background-color: #FFFFFF !important; 
             border-color: #d0ebf0 !important; 
             color: #222222 !important; 
-            transition: all 0.3s ease !important; 
+            transition: all 0.2s ease !important; 
         }
         input:focus, textarea:focus, select:focus { 
             border-color: var(--theme-color) !important; 
@@ -107,12 +107,12 @@
 
         #cardContainer { 
             backface-visibility: hidden; -webkit-font-smoothing: antialiased; 
-            margin: 0 auto; transition: all 0.3s ease; 
+            margin: 0 auto; transition: all 0.2s ease; 
         }
         
         .dropdown-item { 
             padding: 10px 16px; cursor: pointer; font-size: 11px; font-weight: 600; 
-            transition: all 0.2s; border-radius: 8px; margin: 0 4px; 
+            transition: all 0.15s; border-radius: 8px; margin: 0 4px; 
         }
         .dropdown-item:hover { background-color: rgba(232, 246, 248, 0.6); color: #51b8cb; }
 
@@ -121,7 +121,6 @@
         }
         .resizable-img:active { cursor: ew-resize; box-shadow: 0 0 0 4px rgba(172, 135, 102, 0.3); }
         
-        /* Hand-drawn typography & Lists reset */
         #cardWord, .card-extra-def-input { font-family: 'Caveat', cursive !important; }
         .card-extra-def-input { tab-size: 4; -moz-tab-size: 4; }
         .handdrawn-title { font-family: 'Caveat', cursive !important; }
@@ -132,12 +131,10 @@
         
         a[href] { color: var(--theme-color); text-decoration: underline; cursor: pointer; }
 
-        /* ContentEditable Placeholder Styling */
         [contenteditable]:empty:before {
             content: attr(data-placeholder); color: inherit; opacity: 0.4; pointer-events: none; display: block;
         }
 
-        /* Image Editor Toolbar Styles */
         .ed-tool-btn.active {
             color: var(--theme-color) !important;
             background-color: rgba(255,255,255,0.2) !important;
@@ -148,7 +145,11 @@
             display: none !important; 
         }
 
-        /* No-scroll & Touch optimization for Editor Canvas */
+        .format-toolbar, #floatingImageToolbar {
+            right: max(1.5rem, env(safe-area-inset-right)) !important;
+            max-width: calc(100vw - 3rem) !important;
+        }
+
         .editor-canvas-layer {
             touch-action: none !important;
             user-select: none;
@@ -163,30 +164,18 @@
     <input type="file" id="imageInput" class="hidden" accept="image/*" multiple>
     <input type="file" id="fileImportInput" class="hidden" accept=".png, .pdf, .txt, .json">
     <button id="btnInstallApp" class="hidden"></button>
-
-    <!-- Mobile FAB Group with Hover Toolbar -->
-    <div class="fixed z-[140] group/fab flex flex-row-reverse items-center gap-3 transition-all duration-300 ease-in-out" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: max(1.5rem, env(safe-area-inset-right));">
-        <button id="mobileFab" onclick="toggleMobileMenu(event)" class="bg-[var(--theme-color)] text-white w-12 h-12 rounded-full shadow-xl flex items-center justify-center outline-none hover:scale-110 transition-transform duration-300">
-            <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
-        <!-- Hover Toolbar -->
-        <div class="flex items-center bg-white/90 backdrop-blur-md border border-gray-200/60 rounded-full shadow-lg p-1.5 opacity-0 pointer-events-none translate-x-4 group-hover/fab:opacity-100 group-hover/fab:translate-x-0 group-hover/fab:pointer-events-auto transition-all duration-300">
-            <button onclick="downloadPNG()" class="p-2 hover:bg-black/10 rounded-full text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Download Image">
-                <i data-lucide="image" class="w-4 h-4"></i>
-            </button>
-            <div class="w-px h-5 bg-gray-200 mx-1"></div>
-            <button onclick="downloadPDF()" class="p-2 hover:bg-black/10 rounded-full text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Download PDF">
-                <i data-lucide="file-text" class="w-4 h-4"></i>
-            </button>
-        </div>
+    
+    <!-- Side Dashboard Toggle Arrow Button -->
+    <div id="dashboardToggleBtn" onclick="toggleDashboardPanel()" class="fixed top-1/2 -translate-y-1/2 z-[220] bg-white border border-gray-200 shadow-md rounded-r-lg cursor-pointer text-gray-500 hover:text-[var(--theme-color)] flex items-center justify-center h-16 w-5 left-0 transition-all duration-200 outline-none">
+        <i data-lucide="chevron-right" id="dashboardToggleIcon" class="w-4 h-4 -ml-1"></i>
     </div>
 
     <!-- Main Content Container with transition for squishing -->
-    <div id="mainLayout" class="relative z-10 w-full flex flex-col items-center h-screen overflow-hidden transition-all duration-300 ease-in-out" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left);">
+    <div id="mainLayout" class="relative z-10 w-full flex flex-col items-center h-screen overflow-hidden transition-all duration-200 ease-in-out" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-right: env(safe-area-inset-right);">
         
         <main class="w-full flex justify-center flex-1">
             
-            <div id="cardContainer" class="border-[4px] md:border-[4px] border-[var(--theme-color)] relative transition-all duration-500 w-full min-h-screen group/maincard theme-blend-bg-card">
+            <div id="cardContainer" class="border-[4px] md:border-[4px] border-[var(--theme-color)] relative transition-all duration-300 w-full min-h-screen group/maincard theme-blend-bg-card">
 
                     <div class="pt-6 md:pt-10 px-6 md:px-20 pb-8 md:pb-20 group/card flex flex-col h-screen overflow-y-auto custom-scrollbar max-w-[1400px] mx-auto">
                         
@@ -197,7 +186,7 @@
                         <div id="cardTitleSection" class="group/title relative flex items-center flex-wrap gap-2 md:gap-4 py-1 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl hover:bg-black/5 transition-colors">
                             
                             <!-- Animated Text Toolbar (Settings & Format integrated) -->
-                            <div id="titleToolbar" class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-center items-center p-1 gap-1 w-max max-w-[calc(100vw-5.5rem)] md:max-w-[800px] opacity-0 pointer-events-none transition-all duration-300 ease-in-out z-[150] origin-bottom-right scale-90" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);">
+                            <div id="titleToolbar" class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-center items-center p-1 gap-1 w-max opacity-0 pointer-events-none transition-all duration-200 ease-in-out z-[150] origin-bottom-right scale-90" style="bottom: max(1.5rem, env(safe-area-inset-bottom));">
                                 <div class="relative">
                                     <button id="toolbarTitleSizeBtn" onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'toolbarTitleSizeDropdownMenu')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors flex items-center gap-1 text-[11px] font-bold min-w-[40px] justify-center" aria-label="Font Size">
                                         <span id="toolbarTitleSizeLabel">32</span>
@@ -231,7 +220,7 @@
                                 </div>
                                 <div class="relative">
                                     <button onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'floatingThemeColorOptions')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Theme Color"><i data-lucide="palette" class="w-4 h-4"></i></button>
-                                    <div id="floatingThemeColorOptions" class="hidden toolbar-dropdown absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-xl z-[60] overflow-hidden w-64 border border-[#d0ebf0] p-3" onmousedown="event.stopPropagation()">
+                                    <div id="floatingThemeColorOptions" class="hidden toolbar-dropdown absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-xl z-[60] w-64 border border-[#d0ebf0] p-3" onmousedown="event.stopPropagation()">
                                         <div class="flex justify-between items-center mb-3">
                                             <button id="btnRandomColor" class="p-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-400 hover:text-[var(--theme-color)] rounded-lg transition-all shadow-sm"><i data-lucide="shuffle" class="w-3.5 h-3.5"></i></button>
                                             <div class="relative shrink-0 w-24">
@@ -251,7 +240,9 @@
                                     </div>
                                 </div>
                                 <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                                <button onmousedown="event.preventDefault(); document.getElementById('imageInput').click()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Add Image"><i data-lucide="image-plus" class="w-4 h-4"></i></button>
+                                <button onmousedown="event.preventDefault(); document.getElementById('imageInput').click()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Add Image"><i data-lucide="image" class="w-4 h-4"></i></button>
+                                <button onmousedown="event.preventDefault(); openImageLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Image Link"><i data-lucide="image-plus" class="w-4 h-4"></i></button>
+                                <button onmousedown="event.preventDefault(); openAudioLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Audio Link"><i data-lucide="headphones" class="w-4 h-4"></i></button>
                                 <div class="relative">
                                     <button onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'floatingLayoutOptions')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Image Layout"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
                                     <div id="floatingLayoutOptions" class="hidden toolbar-dropdown absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-xl z-[60] overflow-hidden w-40 border border-[#d0ebf0] py-1"></div>
@@ -293,7 +284,7 @@
         </div>
 
     <!-- Inline Editor Floating Toolbar -->
-    <div id="floatingImageToolbar" class="hidden fixed bg-transparent border border-gray-200 rounded-xl z-[200] flex flex-wrap justify-center items-center p-1.5 gap-1 w-[92vw] sm:w-[360px] md:w-max md:max-w-none origin-bottom-right transition-all duration-300 ease-in-out scale-90 opacity-0" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+    <div id="floatingImageToolbar" class="hidden fixed bg-transparent border border-gray-200 rounded-xl z-[200] flex flex-wrap justify-center items-center p-1.5 gap-1 w-[92vw] sm:w-[360px] md:w-max md:max-w-none origin-bottom-right transition-all duration-200 ease-in-out scale-90 opacity-0" style="bottom: max(1.5rem, env(safe-area-inset-bottom));" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
         
         <!-- Align Tools -->
         <button onclick="cardImgAlign('left')" class="p-2 md:p-1.5 text-gray-500 hover:bg-black/10 rounded-lg transition-colors" aria-label="Align Left"><i data-lucide="align-left" class="w-4 h-4"></i></button>
@@ -369,50 +360,52 @@
     </div>
 
     <!-- Context / Dashboard Menu Sidebar -->
-    <div id="floatingPreviewMenu" class="hidden flex fixed flex-col bg-white/75 backdrop-blur-xl border-l border-gray-200/50 shadow-[0_10px_40px_rgba(0,0,0,0.15)] rounded-none z-[200] overflow-hidden transition-all origin-right">
+    <div id="floatingPreviewMenu" class="hidden flex fixed flex-col bg-white/75 backdrop-blur-xl border-r border-gray-200/50 shadow-[10px_0_40px_rgba(0,0,0,0.15)] rounded-none z-[200] overflow-hidden transition-all origin-left">
         
+        <!-- Resizer Line -->
+        <div id="dashboardResizer" class="hidden absolute top-0 right-0 w-2 h-full cursor-ew-resize hover:bg-[var(--theme-color)] transition-colors z-[210] opacity-50"></div>
+
         <div id="menuInner" class="flex flex-col w-full h-full gap-2 transition-all mx-auto">
             
-            <!-- Fullscreen Header (Hidden in Context Mode) -->
-            <div id="fullscreenMenuHeader" class="hidden flex-col gap-1 pb-4 mb-2 border-b border-gray-200/60 shrink-0">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <button onclick="window.currentUser ? window.triggerGoogleLogout() : window.triggerGoogleLogin()" class="p-2 bg-gray-100/50 hover:bg-gray-200/80 rounded-full text-gray-500 transition-colors shadow-sm" title="Account">
-                            <i data-lucide="user" class="w-5 h-5"></i> <span id="authBtnText" class="text-[9px] font-bold hidden">Login</span>
+            <!-- Fullscreen Header with integrated transparent toolbar -->
+            <div id="fullscreenMenuHeader" class="hidden flex-col gap-2 pb-4 mb-2 border-b border-gray-200/60 shrink-0">
+                <div class="flex items-center justify-between w-full">
+                    <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1 flex-1 bg-transparent">
+                        <button onclick="window.currentUser ? window.triggerGoogleLogout() : window.triggerGoogleLogin()" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)] shrink-0" title="Account">
+                            <i data-lucide="user" class="w-4 h-4"></i>
                         </button>
-                        <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-color)] to-blue-500 tracking-tight">aliyasa</h2>
+                        <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                        <button onclick="createCard()" oncontextmenu="event.preventDefault(); createCard(true);" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)]" title="New Card">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                        <button onclick="openFolderModal()" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)]" title="New Folder">
+                            <i data-lucide="folder-plus" class="w-4 h-4"></i>
+                        </button>
+                        <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                        <button onclick="document.getElementById('fileImportInput').click()" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)]" title="Import File">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="downloadPNG()" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)]" title="Download Image">
+                            <i data-lucide="image" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="downloadPDF()" oncontextmenu="event.preventDefault(); downloadPDF(true)" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)]" title="Download PDF">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                        </button>
+                        <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                        <button onclick="manualSync()" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)]" title="Sync Data">
+                            <i data-lucide="refresh-cw" id="syncIcon" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <button onclick="window.closePreviewMenu()" class="p-2 bg-gray-100/50 hover:bg-gray-200/80 rounded-full text-gray-500 transition-colors shadow-sm"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
             </div>
             
-            <!-- Top Toolbar (Export & Core Actions) -->
-            <div class="flex items-center justify-between bg-white/60 backdrop-blur-md shadow-sm rounded-xl p-1.5 border border-white/40 shrink-0">
-                <button onclick="createCard()" oncontextmenu="event.preventDefault(); createCard(true);" class="p-1.5 hover:bg-white rounded-lg transition-all hover:scale-105 hover:shadow-sm text-[#e7f135] hover:text-[#51b8cb]" aria-label="New Card" title="New Card">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-                <button onclick="openFolderModal()" class="p-1.5 hover:bg-white rounded-lg transition-all hover:scale-105 hover:shadow-sm text-gray-500 hover:text-[var(--theme-color)]" aria-label="New Folder" title="New Folder">
-                    <i data-lucide="folder-plus" class="w-4 h-4"></i>
-                </button>
-                <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
-
-                <button onclick="document.getElementById('fileImportInput').click()" class="p-1.5 hover:bg-white rounded-lg transition-all hover:scale-105 hover:shadow-sm text-gray-500 hover:text-[var(--theme-color)]" title="Import File"><i data-lucide="upload" class="w-4 h-4"></i></button>
-                <button id="cardDownloadBtnCtx" onclick="downloadPNG()" class="p-1.5 hover:bg-white rounded-lg transition-all hover:scale-105 hover:shadow-sm text-gray-500 hover:text-[var(--theme-color)]" title="Download Image"><i data-lucide="image" class="w-4 h-4"></i></button>
-                <button id="cardDownloadPdfBtnCtx" onclick="downloadPDF()" oncontextmenu="event.preventDefault(); downloadPDF(true)" class="p-1.5 hover:bg-white rounded-lg transition-all hover:scale-105 hover:shadow-sm text-gray-500 hover:text-[var(--theme-color)]" title="Download PDF"><i data-lucide="file-text" class="w-4 h-4"></i></button>
-                <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
-                <!-- Sync Button -->
-                <button onclick="manualSync()" class="p-1.5 hover:bg-white rounded-lg transition-all hover:scale-105 hover:shadow-sm text-gray-500 hover:text-[var(--theme-color)]" title="Sync Data">
-                    <i data-lucide="refresh-cw" id="syncIcon" class="w-4 h-4"></i>
-                </button>
-            </div>
-
             <!-- Cards List -->
             <div id="headerCardsList" class="max-h-48 overflow-y-auto custom-scrollbar border border-white/40 shadow-sm rounded-xl bg-white/60 backdrop-blur-md shrink-0 transition-all flex-col gap-1 p-1"></div>
         </div>
     </div>
     
     <!-- Custom Toast Message -->
-    <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-xl shadow-lg z-[999] transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-medium text-center"></div>
+    <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-xl shadow-lg z-[999] transition-opacity duration-200 opacity-0 pointer-events-none text-sm font-medium text-center"></div>
 
     <!-- In-App Link Modal -->
     <div id="linkModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
@@ -427,6 +420,87 @@
             <div class="flex justify-end gap-2 mt-5">
                 <button onclick="closeLinkModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
                 <button onclick="confirmInsertLink()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Link Modal -->
+    <div id="imageLinkModal" class="hidden fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white border border-[#d0ebf0] rounded-2xl shadow-2xl w-11/12 max-w-sm p-5 transform transition-transform scale-95 origin-center duration-150 outline-none" tabindex="0" id="imageLinkModalContent">
+            <h3 class="text-sm font-bold text-gray-800 mb-4">Insert Image Link</h3>
+            <div class="space-y-3">
+                <p class="text-[11px] text-gray-500">Select an image or press <strong>Ctrl+V</strong> to paste from your clipboard.</p>
+                <input type="file" id="imageLinkInput" accept="image/*" class="w-full text-xs mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                <div id="imageLinkPreview" class="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50">
+                    <span class="text-xs text-gray-400">Image Preview...</span>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeImageLinkModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                <button onclick="confirmInsertImageLink()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Insert Link</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio Link Modal -->
+    <div id="audioLinkModal" class="hidden fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white border border-[#d0ebf0] rounded-2xl shadow-2xl w-11/12 max-w-sm p-5 transform transition-transform scale-95 origin-center duration-150 outline-none" tabindex="0">
+            <h3 class="text-sm font-bold text-gray-800 mb-4">Insert Audio Link</h3>
+            <div class="space-y-3">
+                <p class="text-[11px] text-gray-500">Upload an audio file or record directly.</p>
+                
+                <div class="flex gap-2 mb-2">
+                    <button id="audioTabUpload" onclick="switchAudioTab('upload')" class="flex-1 py-1.5 text-xs font-bold bg-[var(--theme-color)] text-white rounded-lg transition-colors">Upload</button>
+                    <button id="audioTabRecord" onclick="switchAudioTab('record')" class="flex-1 py-1.5 text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">Record</button>
+                </div>
+
+                <!-- Upload Area -->
+                <div id="audioUploadArea" class="block">
+                    <input type="file" id="audioLinkInput" accept="audio/*" class="w-full text-xs p-2 bg-gray-50 rounded-lg border border-gray-200">
+                </div>
+
+                <!-- Record Area -->
+                <div id="audioRecordArea" class="hidden text-center py-2 border border-gray-200 rounded-lg bg-gray-50">
+                    <button id="recordBtn" onclick="toggleAudioRecording()" class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center mx-auto hover:bg-red-600 outline-none shadow-md transition-colors">
+                        <i data-lucide="mic" class="w-4 h-4"></i>
+                    </button>
+                    <span id="recordTimer" class="block mt-2 text-xs font-bold text-gray-500">00:00</span>
+                </div>
+
+                <div class="w-full mt-3">
+                    <audio id="audioLinkPreview" controls class="w-full h-8 hidden"></audio>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeAudioLinkModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                <button onclick="confirmInsertAudioLink()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Insert Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div id="imageViewModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0" onclick="closeImageViewModal()">
+        <img id="imageViewModalImg" class="max-w-[90%] max-h-[90%] rounded-xl shadow-2xl object-contain cursor-zoom-out scale-95 transition-transform duration-200" src="">
+    </div>
+    
+    <!-- Audio Viewer Modal -->
+    <div id="audioViewModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0" onclick="if(event.target.id === 'audioViewModal') closeAudioViewModal()">
+        <div class="bg-white rounded-2xl p-5 w-11/12 max-w-sm shadow-2xl transform scale-95 transition-transform duration-200 flex flex-col gap-4" id="audioViewModalContent">
+            <h3 class="text-sm font-bold text-gray-800 flex justify-between items-center">
+                Audio Playback
+                <button onclick="closeAudioViewModal()" class="text-gray-400 hover:text-rose-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </h3>
+            <audio id="audioViewModalAudio" controls class="w-full outline-none"></audio>
+            <div class="flex items-center justify-between mt-2">
+                <span class="text-xs font-bold text-gray-500">Playback Speed:</span>
+                <select id="audioSpeedSelect" onchange="changeAudioSpeed(this.value)" class="text-xs border border-gray-200 rounded-lg p-1.5 bg-gray-50 outline-none focus:border-[var(--theme-color)] font-medium">
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1.0x (Normal)</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2.0x</option>
+                </select>
             </div>
         </div>
     </div>
@@ -520,8 +594,11 @@
         const fontMap = {
             'Caveat': "'Caveat', cursive",
             'Poppins': "'Poppins', sans-serif",
-            'DM Serif Display': "'DM Serif Display', serif"
+            'DM Serif Display': "'DM Serif Display', serif",
+            'Times New Roman': "'Times New Roman', Times, serif"
         };
+
+        let currentDashboardWidth = Math.max(300, window.innerWidth * 0.25);
 
         let activeColor = "#51b8cb", hue = 189, saturation = 60, brightness = 80;
         let uploadedImages = [], activeBlocks = []; 
@@ -545,6 +622,15 @@
         let recognition = null, isRecording = false, activeMicBtn = null;
         let edFillShape = false;
         let savedSelection = null;
+        
+        let pendingImageLinkBase64 = null;
+        
+        // Audio globals
+        let pendingAudioLinkBase64 = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordInterval = null;
+        let recordSeconds = 0;
 
         window.showTitleToolbar = function() {
             const tb = document.getElementById('titleToolbar');
@@ -687,9 +773,318 @@
             closeLinkModal();
             if (url && url !== 'https://') {
                 restoreSelection();
-                execFormat('createLink', url);
+                const sel = window.getSelection();
+                if (sel.rangeCount && !sel.isCollapsed) {
+                    const text = sel.toString();
+                    const html = `<a href="${url}" style="color: var(--theme-color); text-decoration: underline; cursor: pointer;" target="_blank">🔗 ${text}</a>`;
+                    document.execCommand('insertHTML', false, html);
+                    syncCardState();
+                } else {
+                    const html = `<a href="${url}" style="color: var(--theme-color); text-decoration: underline; cursor: pointer;" target="_blank">🔗 ${url}</a>`;
+                    document.execCommand('insertHTML', false, html);
+                    syncCardState();
+                }
             }
         };
+
+        window.openImageLinkModal = function() {
+            saveSelection();
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) {
+                showToast("Please select some text first!");
+                return;
+            }
+            pendingImageLinkBase64 = null;
+            document.getElementById('imageLinkInput').value = '';
+            document.getElementById('imageLinkPreview').innerHTML = '<span class="text-xs text-gray-400">Image Preview...</span>';
+            
+            const modal = document.getElementById('imageLinkModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+                modal.querySelector('div').focus();
+            }, 10);
+        };
+
+        window.closeImageLinkModal = function() {
+            const modal = document.getElementById('imageLinkModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        };
+
+        document.getElementById('imageLinkInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) handleImageLinkFile(file);
+        });
+
+        window.handleImageLinkFile = function(file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1000;
+                    const MAX_HEIGHT = 1000;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    pendingImageLinkBase64 = canvas.toDataURL('image/webp', 0.8);
+                    document.getElementById('imageLinkPreview').innerHTML = `<img src="${pendingImageLinkBase64}" class="w-full h-full object-contain rounded-md">`;
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.confirmInsertImageLink = function() {
+            if (!pendingImageLinkBase64) {
+                showToast("Please upload or paste an image first.");
+                return;
+            }
+            closeImageLinkModal();
+            restoreSelection();
+            
+            const sel = window.getSelection();
+            if (sel.rangeCount && !sel.isCollapsed) {
+                const text = sel.toString();
+                const html = `<a href="#" class="inline-img-link" data-img="${pendingImageLinkBase64}" style="color: var(--theme-color); text-decoration: underline; text-decoration-style: dashed; text-underline-offset: 4px; font-weight: 600; cursor: pointer;">🖼️ ${text}</a>`;
+                document.execCommand('insertHTML', false, html);
+                syncCardState();
+            }
+        };
+
+        window.showImageViewer = function(src) {
+            const modal = document.getElementById('imageViewModal');
+            const img = document.getElementById('imageViewModalImg');
+            img.src = src;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                img.classList.remove('scale-95');
+                img.classList.add('scale-100');
+            }, 10);
+        };
+
+        window.closeImageViewModal = function() {
+            const modal = document.getElementById('imageViewModal');
+            const img = document.getElementById('imageViewModalImg');
+            modal.classList.add('opacity-0');
+            img.classList.remove('scale-100');
+            img.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                img.src = '';
+            }, 200);
+        };
+        
+        // --- AUDIO LINK LOGIC ---
+
+        window.openAudioLinkModal = function() {
+            saveSelection();
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) {
+                showToast("Please select some text first!");
+                return;
+            }
+            pendingAudioLinkBase64 = null;
+            document.getElementById('audioLinkInput').value = '';
+            document.getElementById('audioLinkPreview').classList.add('hidden');
+            document.getElementById('audioLinkPreview').src = '';
+            
+            switchAudioTab('upload');
+            
+            const modal = document.getElementById('audioLinkModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        };
+
+        window.closeAudioLinkModal = function() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                toggleAudioRecording(); 
+            }
+            const modal = document.getElementById('audioLinkModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        };
+
+        window.switchAudioTab = function(tab) {
+            const upTab = document.getElementById('audioTabUpload');
+            const recTab = document.getElementById('audioTabRecord');
+            const upArea = document.getElementById('audioUploadArea');
+            const recArea = document.getElementById('audioRecordArea');
+            
+            if (tab === 'upload') {
+                upTab.className = "flex-1 py-1.5 text-xs font-bold bg-[var(--theme-color)] text-white rounded-lg transition-colors";
+                recTab.className = "flex-1 py-1.5 text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors";
+                upArea.classList.remove('hidden');
+                recArea.classList.add('hidden');
+            } else {
+                recTab.className = "flex-1 py-1.5 text-xs font-bold bg-[var(--theme-color)] text-white rounded-lg transition-colors";
+                upTab.className = "flex-1 py-1.5 text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors";
+                recArea.classList.remove('hidden');
+                upArea.classList.add('hidden');
+            }
+        };
+
+        document.getElementById('audioLinkInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    pendingAudioLinkBase64 = evt.target.result;
+                    const preview = document.getElementById('audioLinkPreview');
+                    preview.src = pendingAudioLinkBase64;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        window.toggleAudioRecording = async function() {
+            const btn = document.getElementById('recordBtn');
+            const icon = btn.querySelector('i');
+            const timer = document.getElementById('recordTimer');
+            
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                clearInterval(recordInterval);
+                btn.classList.remove('bg-gray-800', 'animate-pulse');
+                btn.classList.add('bg-red-500');
+                icon.setAttribute('data-lucide', 'mic');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = e => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); 
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            pendingAudioLinkBase64 = evt.target.result;
+                            const preview = document.getElementById('audioLinkPreview');
+                            preview.src = pendingAudioLinkBase64;
+                            preview.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(audioBlob);
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    
+                    recordSeconds = 0;
+                    timer.innerText = "00:00";
+                    clearInterval(recordInterval);
+                    recordInterval = setInterval(() => {
+                        recordSeconds++;
+                        const m = Math.floor(recordSeconds / 60).toString().padStart(2, '0');
+                        const s = (recordSeconds % 60).toString().padStart(2, '0');
+                        timer.innerText = `${m}:${s}`;
+                    }, 1000);
+                    
+                    btn.classList.remove('bg-red-500');
+                    btn.classList.add('bg-gray-800', 'animate-pulse');
+                    icon.setAttribute('data-lucide', 'square');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    
+                } catch (err) {
+                    showToast("Microphone access denied or unavailable.");
+                }
+            }
+        };
+
+        window.confirmInsertAudioLink = function() {
+            if (!pendingAudioLinkBase64) {
+                showToast("Please upload or record audio first.");
+                return;
+            }
+            closeAudioLinkModal();
+            restoreSelection();
+            
+            const sel = window.getSelection();
+            if (sel.rangeCount && !sel.isCollapsed) {
+                const text = sel.toString();
+                const html = `<a href="#" class="inline-audio-link" data-audio="${pendingAudioLinkBase64}" style="color: var(--theme-color); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; font-weight: 600; cursor: pointer;">🎶 ${text}</a>`;
+                document.execCommand('insertHTML', false, html);
+                syncCardState();
+            }
+        };
+
+        window.showAudioPlayer = function(src) {
+            const modal = document.getElementById('audioViewModal');
+            const audioEl = document.getElementById('audioViewModalAudio');
+            const speedSelect = document.getElementById('audioSpeedSelect');
+            
+            audioEl.src = src;
+            speedSelect.value = "1";
+            audioEl.playbackRate = 1.0;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                document.getElementById('audioViewModalContent').classList.remove('scale-95');
+                document.getElementById('audioViewModalContent').classList.add('scale-100');
+            }, 10);
+            
+            audioEl.play().catch(e => console.log("Autoplay prevented"));
+        };
+
+        window.closeAudioViewModal = function() {
+            const modal = document.getElementById('audioViewModal');
+            const audioEl = document.getElementById('audioViewModalAudio');
+            
+            modal.classList.add('opacity-0');
+            document.getElementById('audioViewModalContent').classList.remove('scale-100');
+            document.getElementById('audioViewModalContent').classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                audioEl.pause();
+                audioEl.src = '';
+            }, 200);
+        };
+
+        window.changeAudioSpeed = function(val) {
+            const audioEl = document.getElementById('audioViewModalAudio');
+            if(audioEl) audioEl.playbackRate = parseFloat(val);
+        };
+
+        document.getElementById('cardContainer').addEventListener('click', (e) => {
+            const imgLink = e.target.closest('.inline-img-link');
+            if (imgLink) {
+                e.preventDefault();
+                showImageViewer(imgLink.getAttribute('data-img'));
+                return;
+            }
+            
+            const audioLink = e.target.closest('.inline-audio-link');
+            if (audioLink) {
+                e.preventDefault();
+                showAudioPlayer(audioLink.getAttribute('data-audio'));
+                return;
+            }
+        });
 
         window.openFolderModal = function() {
             const modal = document.getElementById('folderModal');
@@ -796,6 +1191,27 @@
             }
         };
 
+        function applyDashboardWidth() {
+            const menu = document.getElementById('floatingPreviewMenu');
+            const main = document.getElementById('mainLayout');
+            const toggleBtn = document.getElementById('dashboardToggleBtn');
+            const toggleIcon = document.getElementById('dashboardToggleIcon');
+            
+            if(menu.classList.contains('hidden') || menu.style.opacity === "0") {
+                toggleBtn.style.left = '0px';
+                if(toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-right');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+            
+            menu.style.width = currentDashboardWidth + 'px';
+            main.style.paddingLeft = currentDashboardWidth + 'px';
+            
+            toggleBtn.style.left = currentDashboardWidth + 'px';
+            if(toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-left');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
         function setDashboardMode(isDashboard) {
             const menu = document.getElementById('floatingPreviewMenu');
             const inner = document.getElementById('menuInner');
@@ -803,19 +1219,15 @@
             const list = document.getElementById('headerCardsList');
             const main = document.getElementById('mainLayout');
             
-            const fabGroup = document.querySelector('.group\\/fab');
-            const toolbars = document.querySelectorAll('.format-toolbar, #floatingImageToolbar');
-            
             if (isDashboard) {
-                menu.classList.remove('w-[320px]', 'rounded-2xl', 'p-2', 'origin-bottom-right');
-                menu.classList.add('fixed', 'top-0', 'right-0', 'bottom-0', 'h-full', 'w-[320px]', 'md:w-[25vw]', 'rounded-l-3xl', 'rounded-r-none', 'p-4', 'sm:p-6', 'overflow-y-auto', 'border-r-0');
+                menu.classList.remove('w-[320px]', 'rounded-2xl', 'p-2', 'origin-left');
+                menu.classList.add('fixed', 'top-0', 'left-0', 'bottom-0', 'h-full', 'rounded-none', 'p-4', 'sm:p-6', 'overflow-y-auto', 'border-r');
                 
-                // Remove floating explicit positions
                 menu.style.top = '0px';
-                menu.style.left = 'auto';
-                menu.style.right = '0px';
+                menu.style.right = 'auto';
+                menu.style.left = '0px';
                 menu.style.bottom = '0px';
-                menu.style.transformOrigin = "right center";
+                menu.style.transformOrigin = "left center";
                 
                 header.classList.remove('hidden');
                 header.classList.add('flex');
@@ -823,25 +1235,22 @@
                 list.classList.remove('max-h-48', 'shrink-0');
                 list.classList.add('flex-1', 'min-h-[50vh]');
                 
-                main.classList.add('pr-[320px]', 'md:pr-[25vw]');
-                
-                if (fabGroup) fabGroup.style.right = window.innerWidth >= 768 ? 'calc(25vw + 1.5rem)' : 'calc(320px + 1.5rem)';
-                toolbars.forEach(tb => tb.style.right = window.innerWidth >= 768 ? 'calc(25vw + 5rem)' : 'calc(320px + 5rem)');
-                
+                document.getElementById('dashboardResizer').classList.remove('hidden');
+                applyDashboardWidth();
             } else {
-                menu.classList.remove('fixed', 'top-0', 'right-0', 'bottom-0', 'h-full', 'w-[320px]', 'md:w-[25vw]', 'rounded-l-3xl', 'rounded-r-none', 'p-4', 'sm:p-6', 'overflow-y-auto', 'border-r-0');
-                menu.classList.add('w-[320px]', 'rounded-2xl', 'p-2', 'origin-bottom-right');
+                menu.classList.remove('fixed', 'top-0', 'left-0', 'bottom-0', 'h-full', 'rounded-none', 'p-4', 'sm:p-6', 'overflow-y-auto', 'border-r');
+                menu.classList.add('w-[320px]', 'rounded-2xl', 'p-2', 'origin-left');
                 
+                menu.style.width = ''; 
                 header.classList.add('hidden');
                 header.classList.remove('flex');
                 
                 list.classList.add('max-h-48', 'shrink-0');
                 list.classList.remove('flex-1', 'min-h-[50vh]');
                 
-                main.classList.remove('pr-[320px]', 'md:pr-[25vw]');
-                
-                if (fabGroup) fabGroup.style.right = 'max(1.5rem, env(safe-area-inset-right))';
-                toolbars.forEach(tb => tb.style.right = 'calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem)');
+                main.style.paddingLeft = '';
+                document.getElementById('dashboardResizer').classList.add('hidden');
+                applyDashboardWidth();
             }
         }
 
@@ -849,7 +1258,7 @@
             const menu = document.getElementById('floatingPreviewMenu');
             if (!menu || menu.classList.contains('hidden')) return;
             
-            menu.style.transform = "scale(0.95)";
+            menu.style.transform = "translateX(-10px)";
             menu.style.opacity = "0";
             
             setTimeout(() => {
@@ -857,11 +1266,17 @@
                 menu.style.transform = "";
                 menu.style.opacity = "";
                 setDashboardMode(false);
-            }, 150);
+            }, 100);
+            
+            const toggleBtn = document.getElementById('dashboardToggleBtn');
+            const toggleIcon = document.getElementById('dashboardToggleIcon');
+            if(toggleBtn) toggleBtn.style.left = '0px';
+            if(toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-right');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
-        window.toggleMobileMenu = function(e) {
-            e.preventDefault(); e.stopPropagation();
+        window.toggleDashboardPanel = function(e) {
+            if(e) { e.preventDefault(); e.stopPropagation(); }
             const menu = document.getElementById('floatingPreviewMenu');
             
             if (menu.classList.contains('hidden') || menu.style.opacity === "0") {
@@ -870,20 +1285,26 @@
                 menu.style.visibility = 'hidden';
                 menu.classList.remove('hidden');
                 
-                menu.style.transform = "scale(0.95)";
+                menu.style.transform = "translateX(-20px)";
                 menu.style.opacity = "0";
                 
                 menu.style.visibility = 'visible';
                 
                 void menu.offsetWidth;
                 
-                menu.style.transition = "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease-out";
-                menu.style.transform = "scale(1)";
+                menu.style.transition = "transform 0.15s ease-out, opacity 0.15s ease-out";
+                menu.style.transform = "translateX(0)";
                 menu.style.opacity = "1";
+                
+                if (window.updateSyncIcons) window.updateSyncIcons();
             } else {
                 window.closePreviewMenu();
             }
+            setTimeout(applyDashboardWidth, 10);
         };
+        
+        // Aliased to new Dashboard Logic
+        window.toggleMobileMenu = window.toggleDashboardPanel;
 
         window.toggleToolbarDropdown = function(e, id) {
             if(e) { e.preventDefault(); e.stopPropagation(); }
@@ -1231,14 +1652,14 @@
                 
                 const item = document.createElement('div');
                 item.setAttribute('data-id', c.id);
-                item.className = `dropdown-item flex items-center justify-between group/carditem transition-all bg-transparent rounded-lg ${isActive ? 'bg-white/80 shadow-sm border border-white/50' : 'hover:bg-white/50 border border-transparent'} ${c.folderId && !c.isArchived ? 'ml-3 border-l-gray-200/50 rounded-l-none' : ''}`;
-                item.style.color = c.color && c.color.hex ? c.color.hex : '#51b8cb';
+                // Removed inline text coloring, set it explicitly to dark text
+                item.className = `dropdown-item flex items-center justify-between group/carditem transition-all bg-transparent rounded-lg text-[#222222] ${isActive ? 'bg-white/80 shadow-sm border border-white/50' : 'hover:bg-white/50 border border-transparent'} ${c.folderId && !c.isArchived ? 'ml-3 border-l-gray-200/50 rounded-l-none' : ''}`;
                 
                 const leftPart = document.createElement('div');
                 leftPart.className = 'flex items-center gap-2 overflow-hidden flex-1';
                 leftPart.innerHTML = `<i data-lucide="grip-vertical" class="w-3 h-3 opacity-100 lg:opacity-0 lg:group-hover/carditem:opacity-50 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0 transition-opacity text-gray-400"></i>
-                <i data-lucide="${isLocked && !unlockedCards.has(c.id) ? 'lock' : (isActive ? 'check-circle' : 'layout-template')}" class="w-4 h-4 shrink-0"></i> 
-                <span class="truncate flex-1 ${isActive ? 'font-bold' : ''}">${c.title.trim() || 'Card'}</span>`;
+                <i data-lucide="${isLocked && !unlockedCards.has(c.id) ? 'lock' : (isActive ? 'check-circle' : 'layout-template')}" class="w-4 h-4 shrink-0" style="color: ${c.color && c.color.hex ? c.color.hex : '#51b8cb'}"></i> 
+                <span class="truncate flex-1 text-[#222222] ${isActive ? 'font-bold' : ''}">${c.title.trim() || 'Card'}</span>`;
                 
                 const actionsContainer = document.createElement('div');
                 actionsContainer.className = 'flex items-center shrink-0 text-gray-400';
@@ -1408,39 +1829,7 @@
                 if (e.target.closest('#cardWord') || e.target.closest('.card-extra-def-input') || e.target.closest('[id^="preview-wrapper-"]')) return;
             }
             e.preventDefault(); e.stopPropagation();
-
-            const menu = document.getElementById('floatingPreviewMenu');
-            
-            // If already open, close it
-            if (!menu.classList.contains('hidden') && menu.style.opacity !== "0") {
-                window.closePreviewMenu();
-                return;
-            }
-
-            setDashboardMode(true);
-            
-            menu.classList.remove('hidden');
-            menu.style.visibility = 'hidden';
-            requestAnimationFrame(() => {
-                // Clear explicit positions from old logic if any
-                menu.style.top = '';
-                menu.style.left = '';
-                menu.style.right = '0px';
-                menu.style.bottom = '';
-                menu.style.transformOrigin = `right center`;
-                
-                menu.style.transform = "scale(0.9)";
-                menu.style.opacity = "0";
-                menu.style.visibility = 'visible';
-                
-                void menu.offsetWidth;
-                
-                menu.style.transition = "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease-out";
-                menu.style.transform = "scale(1)";
-                menu.style.opacity = "1";
-                
-                if (window.updateSyncIcons) window.updateSyncIcons();
-            });
+            window.toggleDashboardPanel();
         };
 
         window.addNote = function(layoutType) {
@@ -1667,14 +2056,14 @@
             if (!e.target.closest('.btn-format-highlight') && !e.target.closest('.highlight-color-menu')) {
                 document.querySelectorAll('.highlight-color-menu').forEach(el => el.classList.add('hidden'));
             }
-            if (!e.target.closest('.format-toolbar') && !e.target.closest('.toolbar-dropdown') && e.target.id !== 'mobileFab' && !e.target.closest('#mobileFab') && !e.target.closest('.group\\/fab')) {
+            if (!e.target.closest('.format-toolbar') && !e.target.closest('.toolbar-dropdown')) {
                 document.querySelectorAll('.toolbar-dropdown, [id$="DropdownMenu"]').forEach(el => el.classList.add('hidden')); 
             }
         });
 
         function initFloatingMenu() {
-            const defSizes = [24, 28, 32, 36, 40, 48, 64, 80];
-            const titleSizes = [32, 36, 40, 48, 56, 64, 72, 80, 96, 120];
+            const defSizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 64, 80];
+            const titleSizes = [16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 96, 120];
 
             const defMenu = document.getElementById('toolbarDefSizeDropdownMenu');
             if(defMenu) {
@@ -1726,7 +2115,7 @@
             const fontOptionsContainer = document.getElementById('floatingFontFamilyOptions');
             if (fontOptionsContainer) {
                 fontOptionsContainer.innerHTML = '';
-                ['Caveat', 'Poppins', 'DM Serif Display'].forEach(f => {
+                ['Caveat', 'Poppins', 'DM Serif Display', 'Times New Roman'].forEach(f => {
                     const item = document.createElement('div');
                     item.className = 'dropdown-item text-gray-700';
                     item.innerText = f;
@@ -1892,8 +2281,19 @@
             document.addEventListener('paste', (event) => { 
                 const clipboardData = event.clipboardData || event.originalEvent.clipboardData;
                 const items = clipboardData.items; 
-                let isImagePaste = false;
                 
+                const imgModal = document.getElementById('imageLinkModal');
+                if (imgModal && !imgModal.classList.contains('hidden')) {
+                    for (let index in items) {
+                        if (items[index].kind === 'file' && items[index].type.includes('image')) {
+                            event.preventDefault();
+                            handleImageLinkFile(items[index].getAsFile());
+                            return; 
+                        }
+                    }
+                }
+
+                let isImagePaste = false;
                 for (let index in items) { 
                     if (items[index].kind === 'file' && items[index].type.includes('image')) {
                         isImagePaste = true; 
@@ -1959,6 +2359,48 @@
                     updatePreview();
                 });
             }
+
+            // Dashboard Resizer Events
+            const resizer = document.getElementById('dashboardResizer');
+            const toggleBtn = document.getElementById('dashboardToggleBtn');
+            let isResizingDashboard = false;
+
+            const startResize = (e) => {
+                isResizingDashboard = true;
+                document.body.style.userSelect = 'none';
+                if(toggleBtn) toggleBtn.style.transition = 'none';
+            };
+            const doResize = (e) => {
+                if (!isResizingDashboard) return;
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let newWidth = clientX; // Left side logic
+                newWidth = Math.max(250, Math.min(newWidth, window.innerWidth - 50)); 
+                currentDashboardWidth = newWidth;
+                applyDashboardWidth();
+            };
+            const stopResize = () => {
+                if (isResizingDashboard) {
+                    isResizingDashboard = false;
+                    document.body.style.userSelect = '';
+                    if(toggleBtn) toggleBtn.style.transition = '';
+                    
+                    if (activeCardId) {
+                        const card = cards.find(c => c.id === activeCardId);
+                        if (card) {
+                            card.dashboardWidth = currentDashboardWidth;
+                            debouncedSave();
+                        }
+                    }
+                    localStorage.setItem('ali_dashboard_width', currentDashboardWidth);
+                }
+            };
+
+            resizer.addEventListener('mousedown', startResize);
+            resizer.addEventListener('touchstart', startResize, {passive: true});
+            window.addEventListener('mousemove', doResize);
+            window.addEventListener('touchmove', doResize, {passive: true});
+            window.addEventListener('mouseup', stopResize);
+            window.addEventListener('touchend', stopResize);
         }
 
         function handleImageResizeStart(e, imgIdx, isGroup = false, blockIdx = -1) { 
@@ -2178,7 +2620,8 @@
                 fontFamily: 'Caveat',
                 showTitlePlaceholder: true,
                 isSynced: false,
-                isArchived: false
+                isArchived: false,
+                dashboardWidth: currentDashboardWidth // Defaults to global memory
             }; 
             cards.push(newCard); await saveCardsToStorageNow(); switchCard(newCard.id); 
         }
@@ -2209,6 +2652,14 @@
                 delete card.extraNotes; delete card.bottomImages;
             }
             if (!card.blocks) card.blocks = [];
+            
+            // Per-card dashboard width initialization
+            if (card.dashboardWidth) {
+                currentDashboardWidth = card.dashboardWidth;
+            } else {
+                currentDashboardWidth = localStorage.getItem('ali_dashboard_width') ? parseInt(localStorage.getItem('ali_dashboard_width')) : Math.max(300, window.innerWidth * 0.25);
+            }
+            applyDashboardWidth();
 
             document.getElementById('inputTitle').value = card.title; 
             showTitlePlaceholder = card.showTitlePlaceholder !== false; 
@@ -2241,6 +2692,7 @@
             card.imageBorder = currentImageBorder; card.imageCols = currentImageCols; card.blend = currentBlendPercentage; card.cardBorder = currentCardBorder;
             card.fontFamily = currentFontFamily;
             card.showTitlePlaceholder = showTitlePlaceholder; 
+            card.dashboardWidth = currentDashboardWidth;
             
             card.isSynced = false;
             if (window.updateSyncIcons) window.updateSyncIcons();
@@ -2254,11 +2706,13 @@
             document.documentElement.style.setProperty('--theme-color', finalColor);
             document.documentElement.style.setProperty('--theme-blend', getLightShade(finalColor, blend));
             
+            // Dashboard 10% blend active theme
+            const dbMenu = document.getElementById('floatingPreviewMenu');
+            if (dbMenu) dbMenu.style.backgroundColor = getLightShade(finalColor, 10);
+
             document.getElementById('cardContainer').style.borderWidth = currentCardBorder + 'px';
 
             const bVL = document.getElementById('blendValueLabel'); if (bVL) bVL.style.color = finalColor;
-            const dlBtnCtx = document.getElementById('cardDownloadBtnCtx'); if (dlBtnCtx) { dlBtnCtx.style.color = finalColor; }
-            const dlPdfBtnCtx = document.getElementById('cardDownloadPdfBtnCtx'); if (dlPdfBtnCtx) { dlPdfBtnCtx.style.color = finalColor; }
 
             document.querySelectorAll('.dynamic-theme-color-swatch').forEach(swatch => swatch.style.backgroundColor = finalColor);
 
@@ -2293,7 +2747,7 @@
                     img.style.border = `${imgObj.border !== null ? imgObj.border : imgBorder}px solid ${finalColor}`; img.draggable = false;
                     img.onmousedown = (e) => handleImageResizeStart(e, idx, false); img.ontouchstart = (e) => handleImageResizeStart(e, idx, false);
                     img.oncontextmenu = (e) => { 
-                        e.preventDefault(); window.closePreviewMenu();
+                        e.preventDefault(); e.stopPropagation();
                         startInlineEditor(img, idx, -1); showEditorToolbar();
                     };
                     
@@ -2313,7 +2767,6 @@
                     editB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 md:w-4 md:h-4"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
                     editB.onclick = (e) => {
                         e.preventDefault(); e.stopPropagation();
-                        window.closePreviewMenu();
                         startInlineEditor(img, idx, -1);
                         showEditorToolbar();
                     };
@@ -2347,7 +2800,16 @@
                     if (block.type === 'text') {
                         const html = `
                             <div class="group/extradef relative py-1 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl hover:bg-black/10 transition-colors mt-1 ${(block.groupId || block.isPrimaryInline) ? 'flex-1' : ''}" id="block-wrapper-${idx}" data-block-type="text">
-                                <div class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-end md:justify-center items-center p-1 gap-1 w-max max-w-[calc(100vw-5.5rem)] md:max-w-none opacity-0 pointer-events-none group-focus-within/extradef:opacity-100 group-focus-within/extradef:pointer-events-auto transition-all duration-200 z-[150] origin-bottom-right scale-90 group-focus-within/extradef:scale-100" style="bottom: max(1.5rem, env(safe-area-inset-bottom)); right: calc(max(1.5rem, env(safe-area-inset-right)) + 3.5rem);">
+                                <div class="format-toolbar fixed bg-transparent rounded-xl flex flex-wrap justify-end md:justify-center items-center p-1 gap-1 w-max max-w-[calc(100vw-5.5rem)] md:max-w-none opacity-0 pointer-events-none group-focus-within/extradef:opacity-100 group-focus-within/extradef:pointer-events-auto transition-all duration-200 z-[150] origin-bottom-right scale-90 group-focus-within/extradef:scale-100" style="bottom: max(1.5rem, env(safe-area-inset-bottom));">
+                                    <div class="relative">
+                                        <button onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'noteSizeMenu-${idx}')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors flex items-center gap-1 text-[11px] font-bold min-w-[35px] justify-center" aria-label="Font Size">
+                                            <span>${defSize}</span> <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </button>
+                                        <div id="noteSizeMenu-${idx}" class="hidden toolbar-dropdown absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border border-[#d0ebf0] rounded-xl shadow-xl z-[60] overflow-hidden w-16 max-h-48 overflow-y-auto custom-scrollbar">
+                                            ${[12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48].map(s => `<div class="dropdown-item text-gray-700 text-center py-1.5" onmousedown="event.preventDefault(); event.stopPropagation(); selectDefSize(${s}); document.getElementById('noteSizeMenu-${idx}').classList.add('hidden');">${s}</div>`).join('')}
+                                        </div>
+                                    </div>
+                                    <div class="w-px h-4 bg-gray-300 mx-1"></div>
                                     <button onmousedown="event.preventDefault(); execFormat('undo')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors"><i data-lucide="undo" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); execFormat('redo')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors"><i data-lucide="redo" class="w-4 h-4"></i></button>
                                     <div class="w-px h-4 bg-gray-300 mx-1"></div>
@@ -2356,6 +2818,8 @@
                                     <button onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-underline"><i data-lucide="underline" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); insertLink()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Hyperlink"><i data-lucide="link" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); openImageLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Image Link"><i data-lucide="image-plus" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); openAudioLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Audio Link"><i data-lucide="headphones" class="w-4 h-4"></i></button>
                                     
                                     <div class="relative group/highlightpicker">
                                         <button onmousedown="event.preventDefault(); toggleHighlightColorMenu(event)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-highlight" aria-label="Highlight Color"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
@@ -2465,7 +2929,7 @@
                                 img.style.border = `${imgObj.border !== null ? imgObj.border : imgBorder}px solid ${finalColor}`; img.draggable = false;
                                 img.onmousedown = (e) => handleImageResizeStart(e, imgIdx, true, idx); img.ontouchstart = (e) => handleImageResizeStart(e, imgIdx, true, idx);
                                 img.oncontextmenu = (e) => { 
-                                    e.preventDefault(); window.closePreviewMenu();
+                                    e.preventDefault(); e.stopPropagation();
                                     startInlineEditor(img, imgIdx, idx); showEditorToolbar();
                                 };
                                 
@@ -2485,7 +2949,6 @@
                                 editB.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
                                 editB.onclick = (e) => {
                                     e.preventDefault(); e.stopPropagation();
-                                    window.closePreviewMenu();
                                     startInlineEditor(img, imgIdx, idx);
                                     showEditorToolbar();
                                 };
@@ -2714,7 +3177,7 @@
             tempC.className = "editor-canvas-layer absolute top-0 left-0 w-full h-full z-30 cursor-crosshair";
             tempC.style.borderRadius = br; tempC.width = img.clientWidth; tempC.height = img.clientHeight;
             
-            tempC.oncontextmenu = (e) => { e.preventDefault(); showEditorToolbar(); };
+            tempC.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showEditorToolbar(); };
 
             wrapper.appendChild(drawC); wrapper.appendChild(tempC);
             edTarget.drawC = drawC; edTarget.tempC = tempC;
@@ -3049,7 +3512,6 @@
             signOut(window.auth).then(() => {
                 window.currentUser = null;
                 showToast("Successfully logged out.");
-                document.getElementById('authBtnText').innerText = "Login";
                 if (window.updateSyncIcons) window.updateSyncIcons();
             });
         };
@@ -3058,8 +3520,6 @@
             if (user) {
                 window.currentUser = user;
                 showToast("Welcome, " + user.displayName);
-                const authBtn = document.getElementById('authBtnText');
-                if(authBtn) authBtn.innerText = "Logout";
 
                 try {
                     const docRef = doc(window.db, "users", user.uid);
@@ -3087,8 +3547,6 @@
                 }
             } else {
                 window.currentUser = null;
-                const authBtn = document.getElementById('authBtnText');
-                if(authBtn) authBtn.innerText = "Login";
                 if (window.updateSyncIcons) window.updateSyncIcons();
             }
         });
