@@ -20,9 +20,9 @@
     
     <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" defer></script>
     
     <!-- LocalForage for IndexedDB Storage -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
@@ -243,6 +243,7 @@
                                 <button onmousedown="event.preventDefault(); document.getElementById('imageInput').click()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Add Image"><i data-lucide="image" class="w-4 h-4"></i></button>
                                 <button onmousedown="event.preventDefault(); openImageLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Image Link"><i data-lucide="image-plus" class="w-4 h-4"></i></button>
                                 <button onmousedown="event.preventDefault(); openAudioLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Audio Link"><i data-lucide="headphones" class="w-4 h-4"></i></button>
+                                <button onmousedown="event.preventDefault(); openPdfLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert PDF Link"><i data-lucide="file-text" class="w-4 h-4"></i></button>
                                 <button onmousedown="event.preventDefault(); openCardLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Card Link"><i data-lucide="contact" class="w-4 h-4"></i></button>
                                 <div class="relative">
                                     <button onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'floatingLayoutOptions')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Image Layout"><i data-lucide="layout-grid" class="w-4 h-4"></i></button>
@@ -475,6 +476,40 @@
             <div class="flex justify-end gap-2 mt-5">
                 <button onclick="closeAudioLinkModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
                 <button onclick="confirmInsertAudioLink()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Insert Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Link Modal -->
+    <div id="pdfLinkModal" class="hidden fixed inset-0 z-[400] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white border border-[#d0ebf0] rounded-2xl shadow-2xl w-11/12 max-w-sm p-5 transform transition-transform scale-95 origin-center duration-150 outline-none" tabindex="0">
+            <h3 class="text-sm font-bold text-gray-800 mb-4">Insert PDF Link</h3>
+            
+            <div class="flex gap-2 mb-3">
+                <button id="pdfTabUrl" onclick="switchPdfTab('url')" class="flex-1 py-1.5 text-xs font-bold bg-[var(--theme-color)] text-white rounded-lg transition-colors">URL</button>
+                <button id="pdfTabUpload" onclick="switchPdfTab('upload')" class="flex-1 py-1.5 text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors">Upload</button>
+            </div>
+
+            <div class="space-y-3">
+                <!-- URL Area -->
+                <div id="pdfUrlArea" class="block">
+                    <p class="text-[11px] text-gray-500 mb-2">Provide a URL to an external PDF file.</p>
+                    <input type="url" id="pdfLinkInput" placeholder="https://example.com/document.pdf" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[var(--theme-color)] transition-colors">
+                </div>
+
+                <!-- Upload Area -->
+                <div id="pdfUploadArea" class="hidden">
+                    <p class="text-[11px] text-gray-500 mb-2">Select a local PDF file to embed.</p>
+                    <input type="file" id="pdfFileInput" accept="application/pdf" class="w-full text-xs p-2 bg-gray-50 rounded-lg border border-gray-200">
+                    <div id="pdfUploadStatus" class="mt-2 text-[10px] text-emerald-500 font-bold hidden flex items-center gap-1">
+                        <i data-lucide="check-circle" class="w-3 h-3"></i> PDF Ready to Insert!
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closePdfLinkModal()" class="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                <button onclick="confirmInsertPdfLink()" class="px-4 py-2 text-xs font-bold text-white bg-[var(--theme-color)] hover:opacity-90 rounded-lg transition-opacity shadow-md">Insert Link</button>
             </div>
         </div>
     </div>
@@ -1069,6 +1104,95 @@
             const audioEl = document.getElementById('audioViewModalAudio');
             if(audioEl) audioEl.playbackRate = parseFloat(val);
         };
+
+        // --- PDF LINK LOGIC ---
+        let pendingPdfBase64 = null;
+        let currentPdfTab = 'url';
+
+        window.switchPdfTab = function(tab) {
+            currentPdfTab = tab;
+            const urlTab = document.getElementById('pdfTabUrl');
+            const upTab = document.getElementById('pdfTabUpload');
+            const urlArea = document.getElementById('pdfUrlArea');
+            const upArea = document.getElementById('pdfUploadArea');
+            
+            if (tab === 'url') {
+                urlTab.className = "flex-1 py-1.5 text-xs font-bold bg-[var(--theme-color)] text-white rounded-lg transition-colors";
+                upTab.className = "flex-1 py-1.5 text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors";
+                urlArea.classList.remove('hidden');
+                upArea.classList.add('hidden');
+            } else {
+                upTab.className = "flex-1 py-1.5 text-xs font-bold bg-[var(--theme-color)] text-white rounded-lg transition-colors";
+                urlTab.className = "flex-1 py-1.5 text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors";
+                upArea.classList.remove('hidden');
+                urlArea.classList.add('hidden');
+            }
+        };
+
+        document.getElementById('pdfFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 8 * 1024 * 1024) {
+                    showToast("Warning: Large PDF may cause lag.");
+                }
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    pendingPdfBase64 = evt.target.result;
+                    document.getElementById('pdfUploadStatus').classList.remove('hidden');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        window.openPdfLinkModal = function() {
+            saveSelection();
+            pendingPdfBase64 = null;
+            document.getElementById('pdfLinkInput').value = '';
+            document.getElementById('pdfFileInput').value = '';
+            document.getElementById('pdfUploadStatus').classList.add('hidden');
+            switchPdfTab('url'); // Default to URL tab
+            
+            const modal = document.getElementById('pdfLinkModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+                document.getElementById('pdfLinkInput').focus();
+            }, 10);
+        };
+
+        window.closePdfLinkModal = function() {
+            const modal = document.getElementById('pdfLinkModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        };
+
+        window.confirmInsertPdfLink = function() {
+            closePdfLinkModal();
+            restoreSelection();
+            
+            let html = '';
+            if (currentPdfTab === 'url') {
+                const url = document.getElementById('pdfLinkInput').value.trim();
+                if (!url) {
+                    showToast("Please enter a valid PDF URL.");
+                    return;
+                }
+                html = `<a href="${url}" target="_blank" class="inline-pdf-link" style="text-decoration: none; font-size: 1.1em; cursor: pointer;" title="Open PDF">📄</a>&nbsp;`;
+            } else {
+                if (!pendingPdfBase64) {
+                    showToast("Please select a PDF file first.");
+                    return;
+                }
+                // Base64 PDFs use a specific class to be processed differently upon click
+                html = `<a href="#" class="inline-pdf-link-base64" data-pdf="${pendingPdfBase64}" style="text-decoration: none; font-size: 1.1em; cursor: pointer;" title="Open Uploaded PDF">📄</a>&nbsp;`;
+            }
+            
+            document.execCommand('insertHTML', false, html);
+            syncCardState();
+        };
         
         // --- INLINE CARD LINK LOGIC ---
         
@@ -1163,6 +1287,32 @@
             if (cardLink) {
                 e.preventDefault();
                 switchCard(cardLink.getAttribute('data-card-id'));
+                return;
+            }
+
+            const pdfBase64Link = e.target.closest('.inline-pdf-link-base64');
+            if (pdfBase64Link) {
+                e.preventDefault();
+                const base64Data = pdfBase64Link.getAttribute('data-pdf');
+                if (base64Data) {
+                    try {
+                        // Convert Base64 back to Blob to open it securely in modern browsers
+                        const arr = base64Data.split(',');
+                        const mime = arr[0].match(/:(.*?);/)[1];
+                        const bstr = atob(arr[1]);
+                        let n = bstr.length;
+                        const u8arr = new Uint8Array(n);
+                        while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+                        const blob = new Blob([u8arr], {type: mime});
+                        const blobUrl = URL.createObjectURL(blob);
+                        
+                        window.open(blobUrl, '_blank');
+                        // Give the browser time to open before revoking the temporary URL
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                    } catch(err) {
+                        showToast("Failed to open PDF document.");
+                    }
+                }
                 return;
             }
         });
@@ -1264,6 +1414,15 @@
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         confirmInsertCardLink();
+                    }
+                });
+            }
+            const pdfLinkInput = document.getElementById('pdfLinkInput');
+            if (pdfLinkInput) {
+                pdfLinkInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        confirmInsertPdfLink();
                     }
                 });
             }
@@ -1920,10 +2079,37 @@
         };
 
         window.openCardContextMenu = function(e) {
+            // 1. Check if the user right-clicked an image
+            if (e.target.tagName === 'IMG' && e.target.classList.contains('resizable-img')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Extract indices from the parent wrapper ID (e.g., "preview-wrapper-0" or "preview-wrapper-group-1-0")
+                const wrapperId = e.target.parentElement.id;
+                let imgIdx = -1;
+                let blockIdx = -1;
+                
+                if (wrapperId.includes('group')) {
+                    const parts = wrapperId.split('-'); // preview-wrapper-group-blockIdx-imgIdx
+                    blockIdx = parseInt(parts[3]);
+                    imgIdx = parseInt(parts[4]);
+                } else {
+                    const parts = wrapperId.split('-'); // preview-wrapper-imgIdx
+                    imgIdx = parseInt(parts[2]);
+                }
+                
+                // Launch the editor
+                startInlineEditor(e.target, imgIdx, blockIdx);
+                showEditorToolbar();
+                return;
+            }
+
+            // 2. Default Dashboard Right-Click Behavior
             if (e.currentTarget && e.currentTarget.id === 'cardContainer') {
                 if (e.target.closest('#cardWord') || e.target.closest('.card-extra-def-input') || e.target.closest('[id^="preview-wrapper-"]')) return;
             }
-            e.preventDefault(); e.stopPropagation();
+            e.preventDefault(); 
+            e.stopPropagation();
             window.toggleDashboardPanel();
         };
 
@@ -2779,15 +2965,32 @@
         }
         
         function syncCardState() { 
-            if (!activeCardId || isSwitching) return; const card = cards.find(c => c.id === activeCardId); if (!card) return; 
+            if (!activeCardId || isSwitching) return; 
+            const card = cards.find(c => c.id === activeCardId); 
+            if (!card) return; 
+            
             card.title = document.getElementById('inputTitle').value; 
-            card.images = [...uploadedImages]; card.blocks = JSON.parse(JSON.stringify(activeBlocks)); 
             card.color = { hex: activeColor, hue: hue, sat: saturation, bri: brightness }; 
-            card.textSize = currentSelectedSize; card.defSize = currentSelectedDefSize; card.extraDefSize = currentSelectedExtraDefSize; 
-            card.imageBorder = currentImageBorder; card.imageCols = currentImageCols; card.blend = currentBlendPercentage; card.cardBorder = currentCardBorder;
+            card.textSize = currentSelectedSize; 
+            card.defSize = currentSelectedDefSize; 
+            card.extraDefSize = currentSelectedExtraDefSize; 
+            card.imageBorder = currentImageBorder; 
+            card.imageCols = currentImageCols; 
+            card.blend = currentBlendPercentage; 
+            card.cardBorder = currentCardBorder;
             card.fontFamily = currentFontFamily;
             card.showTitlePlaceholder = showTitlePlaceholder; 
             card.dashboardWidth = currentDashboardWidth;
+
+            // Fast shallow update for text blocks, avoiding base64 stringification
+            card.blocks = activeBlocks.map(block => {
+                if (block.type === 'text') {
+                    return { ...block }; // Fast shallow clone for text
+                }
+                return block; // Pass by reference for heavy image groups until explicitly saved
+            });
+            
+            card.images = uploadedImages; 
             
             card.isSynced = false;
             if (window.updateSyncIcons) window.updateSyncIcons();
@@ -2841,10 +3044,6 @@
                     const img = document.createElement('img'); img.src = imgObj.src; img.className = "resizable-img h-auto object-cover rounded-[1.5rem] shadow-sm block w-full";
                     img.style.border = `${imgObj.border !== null ? imgObj.border : imgBorder}px solid ${finalColor}`; img.draggable = false;
                     img.onmousedown = (e) => handleImageResizeStart(e, idx, false); img.ontouchstart = (e) => handleImageResizeStart(e, idx, false);
-                    img.oncontextmenu = (e) => { 
-                        e.preventDefault(); e.stopPropagation();
-                        startInlineEditor(img, idx, -1); showEditorToolbar();
-                    };
                     
                     const moveControls = document.createElement('div'); moveControls.className = "absolute -top-3 -left-3 flex gap-1.5 z-10 hidden-in-export opacity-100 lg:opacity-0 lg:group-hover/imgwrapper:opacity-100 transition-all";
                     if (idx > 0) { 
@@ -2915,6 +3114,7 @@
                                     <button onmousedown="event.preventDefault(); insertLink()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Hyperlink"><i data-lucide="link" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); openImageLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Image Link"><i data-lucide="image-plus" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); openAudioLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Audio Link"><i data-lucide="headphones" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); openPdfLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert PDF Link"><i data-lucide="file-text" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); openCardLinkModal()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert Card Link"><i data-lucide="contact" class="w-4 h-4"></i></button>
                                     
                                     <div class="relative group/highlightpicker">
@@ -3024,10 +3224,6 @@
                                 const img = document.createElement('img'); img.src = imgObj.src; img.className = "resizable-img h-auto object-cover rounded-[1.5rem] shadow-sm block w-full";
                                 img.style.border = `${imgObj.border !== null ? imgObj.border : imgBorder}px solid ${finalColor}`; img.draggable = false;
                                 img.onmousedown = (e) => handleImageResizeStart(e, imgIdx, true, idx); img.ontouchstart = (e) => handleImageResizeStart(e, imgIdx, true, idx);
-                                img.oncontextmenu = (e) => { 
-                                    e.preventDefault(); e.stopPropagation();
-                                    startInlineEditor(img, imgIdx, idx); showEditorToolbar();
-                                };
                                 
                                 const moveControls = document.createElement('div'); moveControls.className = "absolute -top-3 -left-3 flex gap-1.5 z-10 hidden-in-export opacity-100 lg:opacity-0 lg:group-hover/imgwrapper:opacity-100 transition-all";
                                 if (imgIdx > 0) { 
