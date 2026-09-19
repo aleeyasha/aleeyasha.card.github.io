@@ -1193,6 +1193,13 @@
             document.execCommand('insertHTML', false, html);
             syncCardState();
         };
+
+        window.insertCheckbox = function() {
+            // Inserts a native checkbox matched to your theme color, followed by a non-breaking space
+            const html = `<input type="checkbox" class="todo-checkbox w-4 h-4 mx-1 cursor-pointer align-middle accent-[var(--theme-color)]">&nbsp;`;
+            document.execCommand('insertHTML', false, html);
+            syncCardState();
+        };
         
         // --- INLINE CARD LINK LOGIC ---
         
@@ -1248,25 +1255,6 @@
                 suggestionsBox.classList.add('hidden');
             }
         });
-
-        window.confirmInsertCardLink = function() {
-            if (!pendingCardLinkTarget) {
-                const val = document.getElementById('cardLinkModalInput').value.trim().toLowerCase();
-                pendingCardLinkTarget = cards.find(c => c.title.toLowerCase() === val && !c.isArchived);
-                
-                if (!pendingCardLinkTarget) {
-                    showToast("Please select a valid card.");
-                    return;
-                }
-            }
-            
-            closeCardLinkModal();
-            restoreSelection();
-            
-            const html = `<a href="#" class="inline-card-link" data-card-id="${pendingCardLinkTarget.id}" style="text-decoration: none; font-size: 1.1em; cursor: pointer;" title="Go to ${pendingCardLinkTarget.title}">📇</a>&nbsp;`;
-            document.execCommand('insertHTML', false, html);
-            syncCardState();
-        };
 
         document.getElementById('cardContainer').addEventListener('click', (e) => {
             const imgLink = e.target.closest('.inline-img-link');
@@ -2548,6 +2536,26 @@
                 }
                 if (e.target.isContentEditable) updateWordCount(e.target);
             });
+            
+            document.getElementById('cardContainer').addEventListener('change', (e) => {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox' && e.target.classList.contains('todo-checkbox')) {
+                    if (e.target.checked) {
+                        e.target.setAttribute('checked', 'checked');
+                    } else {
+                        e.target.removeAttribute('checked');
+                    }
+                    
+                    const parentBlock = e.target.closest('.card-extra-def-input');
+                    if (parentBlock) {
+                        const idx = parentBlock.getAttribute('data-block-idx');
+                        if (idx !== null && activeBlocks[idx]) {
+                            activeBlocks[idx].content = parentBlock.innerHTML;
+                        }
+                    }
+                    syncCardState();
+                }
+            });
+
             document.getElementById('cardContainer').addEventListener('keydown', (e) => {
                 if (e.target.classList.contains('card-extra-def-input') && e.key === 'Tab') {
                     e.preventDefault(); document.execCommand('insertText', false, '\t');
@@ -3155,6 +3163,7 @@
                                     <div class="w-px h-4 bg-gray-300 mx-1"></div>
                                     <button onmousedown="event.preventDefault(); execFormat('insertUnorderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ul"><i data-lucide="list" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); execFormat('insertOrderedList')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-ol"><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
+                                    <button onmousedown="event.preventDefault(); insertCheckbox()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Insert To-Do Checkbox"><i data-lucide="check-square" class="w-4 h-4"></i></button>
                                     <button onmousedown="event.preventDefault(); sortSelectedTextAZ()" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Sort A-Z"><i data-lucide="arrow-down-a-z" class="w-4 h-4"></i></button>
                                     <div class="w-px h-4 bg-gray-200 mx-1"></div>
                                     <button onmousedown="event.preventDefault(); copyNoteText(event, ${idx}, true)" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Copy Text"><i data-lucide="copy" class="w-4 h-4"></i></button>
