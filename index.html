@@ -21,25 +21,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer="" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer="" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" defer="" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" defer="" crossorigin="anonymous"></script>
     
     <!-- LocalForage for IndexedDB Storage -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js" crossorigin="anonymous"></script>
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&amp;family=Poppins:wght@300;400;500;600;700;900&amp;family=DM+Serif+Display:ital,wght@0,400;1,400&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/harmonyos/HarmonyOS_Sans.css">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&amp;family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 
-    <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/lucide@0.468.0" crossorigin="anonymous"></script>
 
     <style>
+        html, body, button, input, textarea, select { font-family: 'Poppins', sans-serif !important; }
+        #menuInner, #menuInner *, .toolbar-dropdown, .toolbar-dropdown * { font-family: 'Poppins', sans-serif !important; }
+        #cardContainer, #cardContainer .card-extra-def-input, #cardWord { font-family: 'Caveat', cursive !important; }
         :root {
             --theme-color: #51b8cb;
             --theme-blend: #ffffff;
         }
 
         body { 
-            font-family: 'Poppins', sans-serif; 
+            font-family: 'Caveat', cursive; 
             background-color: #e8f6f8; 
             color: #222222; 
             overflow-x: hidden; 
@@ -104,6 +106,27 @@
             pointer-events: none; transform: translate(-50%, -50%); 
         }
 
+        /* Enhanced responsive page/checkbox UX */
+        .todo-checkbox {
+            width: 1.05em !important; height: 1.05em !important;
+            min-width: 1.05em; min-height: 1.05em;
+            vertical-align: -0.12em; margin: 0 .35em 0 0 !important;
+            accent-color: var(--theme-color); cursor: pointer;
+        }
+        .todo-item-done { text-decoration: line-through; opacity: .58; }
+        @media (max-width: 767px) {
+            body { font-size:13px; }
+            #cardContainer { width:100% !important; min-height:100dvh !important; }
+            #cardWord { font-size:min(28px, 8vw) !important; line-height:1.1 !important; }
+            .card-extra-def-input { font-size:min(18px, 5vw) !important; line-height:1.45 !important; }
+            .format-toolbar { max-width:calc(100vw - 12px) !important; padding:3px !important; gap:2px !important; bottom:auto !important; }
+            #pageControls { font-size:10px !important; margin:0 !important; }
+            #pageControls button { padding:4px 7px !important; font-size:10px !important; }
+            .format-toolbar button { padding:5px !important; }
+            .format-toolbar button svg, .format-toolbar i { width:15px !important; height:15px !important; }
+             .format-toolbar [aria-label^="Align "], .format-toolbar [title="Download .txt"], .format-toolbar [title="Dictate"] { display:none !important; }
+            .format-toolbar .text-\[11px\], .format-toolbar .text-\[10px\] { font-size:9px !important; }
+        }
         #cardContainer { 
             backface-visibility: hidden; -webkit-font-smoothing: antialiased; 
             margin: 0 auto; transition: all 0.2s ease; 
@@ -186,7 +209,6 @@
             <div id="cardContainer" class="border-0 md:border-[4px] border-[var(--theme-color)] relative transition-all duration-300 w-full min-h-screen group/maincard theme-blend-bg-card" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-right: env(safe-area-inset-right); border-width: 4px;">
 
                     <div class="pt-2 md:pt-10 px-4 md:px-20 pb-8 md:pb-20 group/card flex flex-col h-screen overflow-y-auto custom-scrollbar max-w-[1400px] mx-auto">
-                        
                         <div id="cardTitleRestore" onclick="restoreTitle()" class="hidden cursor-pointer py-2 px-2 md:px-4 -mx-2 md:-mx-4 rounded-xl md:rounded-2xl border-2 border-dashed border-transparent hover:border-[var(--theme-color)] text-center text-gray-400 hover:text-[var(--theme-color)] opacity-100 lg:opacity-0 lg:group-hover/card:opacity-100 transition-all flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus w-4 h-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg> <span class="text-[10px] font-bold uppercase tracking-[0.2em]">Add Title</span>
                         </div>
@@ -210,12 +232,6 @@
                                 <button onmousedown="event.preventDefault(); execFormat('justifyRight')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors btn-format-right" aria-label="Align Right"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="align-right" aria-hidden="true" class="lucide lucide-align-right w-4 h-4"><path d="M21 5H3"></path><path d="M21 12H9"></path><path d="M21 19H7"></path></svg></button>
                                 
                                 <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                                
-                                <!-- Settings Tools Integrated -->
-                                <div class="relative">
-                                    <button onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'floatingFontFamilyOptions')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Font Family"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="type" aria-hidden="true" class="lucide lucide-type w-4 h-4"><path d="M12 4v16"></path><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"></path><path d="M9 20h6"></path></svg></button>
-                                    <div id="floatingFontFamilyOptions" class="hidden toolbar-dropdown absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-xl z-[60] overflow-hidden w-40 border border-[#d0ebf0] py-1"><div class="dropdown-item text-gray-700" style="font-family: Caveat, cursive;">Caveat</div><div class="dropdown-item text-gray-700" style="font-family: Poppins, sans-serif;">Poppins</div><div class="dropdown-item text-gray-700" style="font-family: &quot;DM Serif Display&quot;, serif;">DM Serif Display</div><div class="dropdown-item text-gray-700" style="font-family: &quot;Times New Roman&quot;, Times, serif;">Times New Roman</div></div>
-                                </div>
                                 <div class="relative">
                                     <button onmousedown="event.preventDefault(); toggleToolbarDropdown(event, 'titleBorderMenu')" class="p-1.5 hover:bg-black/10 rounded-lg text-gray-500 hover:text-[var(--theme-color)] transition-colors" title="Card Border Settings"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="square" aria-hidden="true" class="lucide lucide-square w-4 h-4"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg></button>
                                     <div id="titleBorderMenu" class="hidden toolbar-dropdown absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-xl z-[60] overflow-hidden w-56 border border-[#d0ebf0] p-4 flex flex-col gap-3" onmousedown="event.stopPropagation()">
@@ -468,21 +484,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="user" aria-hidden="true" class="lucide lucide-user w-4 h-4"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         </button>
                         <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                        
-                        <!-- NEWLY ADDED: Frame Size Selection Dropdown -->
-                        <div class="relative flex items-center">
-                            <button onclick="toggleToolbarDropdown(event, 'frameSizeMenu')" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)] shrink-0" title="Select Page Size">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="layout" aria-hidden="true" class="lucide lucide-layout w-4 h-4"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
-                            </button>
-                            <div id="frameSizeMenu" class="hidden toolbar-dropdown absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] overflow-hidden w-24 p-1">
-                                <div class="dropdown-item text-gray-700 py-1.5 text-center font-semibold" onclick="setCardFrameSize(1123)">A3</div>
-                                <div class="dropdown-item text-gray-700 py-1.5 text-center font-semibold" onclick="setCardFrameSize(794)">A4</div>
-                                <div class="dropdown-item text-gray-700 py-1.5 text-center font-semibold" onclick="setCardFrameSize(816)">Letter</div>
-                                <div class="dropdown-item text-gray-700 py-1.5 text-center font-semibold text-[var(--theme-color)]" onclick="setCardFrameSize('auto')">Auto</div>
-                            </div>
-                        </div>
-
-                        <!-- NEWLY ADDED: Open Web Page in Card Area Button -->
+                        <!-- Open Web Page in Card Area Button -->
                         <button onclick="openCustomWebApp()" class="p-1.5 hover:bg-black/5 rounded-lg transition-all text-gray-500 hover:text-[var(--theme-color)] shrink-0" title="News">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="newspaper" aria-hidden="true" class="lucide lucide-newspaper w-4 h-4"><path d="M15 18h-5"></path><path d="M18 14h-8"></path><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"></path><rect width="8" height="4" x="10" y="6" rx="1"></rect></svg>
                         </button>
@@ -760,12 +762,7 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
         
-        const fontMap = {
-            'Caveat': "'Caveat', cursive",
-            'Poppins': "'Poppins', sans-serif",
-            'DM Serif Display': "'DM Serif Display', serif",
-            'Times New Roman': "'Times New Roman', Times, serif"
-        };
+        const fontMap = { 'Caveat': "'Caveat', cursive" };
 
         let currentDashboardWidth = Math.max(300, window.innerWidth * 0.25);
 
@@ -803,41 +800,30 @@
 
         // Card Link globals
         let pendingCardLinkTarget = null;
-
-        window.setCardFrameSize = function(targetWidth) {
-            const menu = document.getElementById('frameSizeMenu');
-            if(menu) menu.classList.add('hidden');
-            
-            if (targetWidth === 'auto') {
-                currentDashboardWidth = Math.max(300, window.innerWidth * 0.25);
-            } else {
-                currentDashboardWidth = window.innerWidth - targetWidth;
-                
-                if (currentDashboardWidth < 250) currentDashboardWidth = 250;
-                if (currentDashboardWidth > window.innerWidth - 50) currentDashboardWidth = window.innerWidth - 50;
-            }
-            
-            applyDashboardWidth(); 
-            
-            if (activeCardId) {
-                const card = cards.find(c => c.id === activeCardId);
-                if (card) {
-                    card.dashboardWidth = currentDashboardWidth;
-                    debouncedSave();
-                }
-            }
-            localStorage.setItem('ali_dashboard_width', currentDashboardWidth);
-        };
-
         window.openCustomWebApp = function() {
-            const cardContainer = document.getElementById('cardContainer');
-            if(cardContainer) cardContainer.classList.add('hidden');
-            
             const iframe = document.getElementById('customWebAppFrame');
-            if(iframe) {
-                iframe.src = 'https://aliyascha.github.io/aliyascha.bundle.github.io/';
-                iframe.classList.remove('hidden');
+            if (!iframe) return;
+            const isOpen = !iframe.classList.contains('hidden');
+            if (isOpen) {
+                iframe.classList.add('hidden');
+                iframe.src = '';
+                iframe.removeAttribute('style');
+                iframe.className = 'hidden absolute top-0 right-0 w-full h-full border-0 z-[100] bg-white transition-all duration-200';
+                return;
             }
+            iframe.src = 'https://aliyascha.github.io/aliyascha.bundle.github.io/';
+            iframe.classList.remove('hidden');
+            iframe.style.position = 'absolute';
+            iframe.style.top = window.innerWidth <= 767 ? 'auto' : '0';
+            iframe.style.bottom = window.innerWidth <= 767 ? '0' : 'auto';
+            iframe.style.right = '0';
+            iframe.style.left = window.innerWidth <= 767 ? '0' : 'auto';
+            iframe.style.width = window.innerWidth <= 767 ? '100%' : 'min(72%, 980px)';
+            iframe.style.height = window.innerWidth <= 767 ? '72%' : '100%';
+            iframe.style.border = '1px solid rgba(0,0,0,.08)';
+            iframe.style.borderRadius = window.innerWidth <= 767 ? '18px 18px 0 0' : '18px 0 0 18px';
+            iframe.style.boxShadow = '0 10px 40px rgba(0,0,0,.16)';
+            iframe.style.zIndex = '180';
         };
 
         window.showTitleToolbar = function() {
@@ -1344,12 +1330,24 @@
         };
 
         window.insertCheckbox = function() {
-            // Inserts a native checkbox matched to your theme color, followed by a non-breaking space
-            const html = `<input type="checkbox" class="todo-checkbox w-4 h-4 mx-1 cursor-pointer align-middle accent-[var(--theme-color)]">&nbsp;`;
+            const html = `<span class="todo-item"><input type="checkbox" class="todo-checkbox" aria-label="Task checkbox"> <span class="todo-label"><br></span></span>`;
             document.execCommand('insertHTML', false, html);
+            const sel = window.getSelection();
+            const label = document.querySelector('.todo-item:last-of-type .todo-label');
+            if (label && sel) { const r=document.createRange(); r.selectNodeContents(label); r.collapse(true); sel.removeAllRanges(); sel.addRange(r); }
             syncCardState();
         };
-        
+
+        function normalizeTodoMarkup(root) {
+            if (!root) return;
+            root.querySelectorAll('input.todo-checkbox').forEach(cb => {
+                cb.setAttribute('aria-label','Task checkbox');
+                const item = cb.closest('.todo-item') || cb.parentElement;
+                if (item) item.classList.toggle('todo-item-done', cb.checked);
+                if (cb.checked) cb.setAttribute('checked','checked'); else cb.removeAttribute('checked');
+            });
+        }
+
         // --- INLINE CARD LINK LOGIC ---
         
         window.openCardLinkModal = function() {
@@ -1966,30 +1964,107 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
-        async function saveCardsToStorageNow() {
-            try {
-                // Offline fallback save
-                await localforage.setItem('ali_dashboard_cards', cards);
-                await localforage.setItem('ali_dashboard_folders', folders);
-                
-                // Cloud backup via Firebase
-                if (window.currentUser && window.db && window.fbSetDoc) {
-                    await window.fbSetDoc(window.fbDoc(window.db, "users", window.currentUser.uid), {
-                        cards: cards,
-                        folders: folders,
-                        lastUpdated: new Date()
+        const APP_SCHEMA_VERSION = 2;
+        const LEGACY_CARDS_KEY = 'ali_dashboard_cards';
+        const LEGACY_FOLDERS_KEY = 'ali_dashboard_folders';
+        const MAX_FIRESTORE_PAYLOAD_BYTES = 900 * 1024;
+        let saveQueue = Promise.resolve();
+        let localRevision = 0;
+
+        function getStorageNamespace() {
+            return window.currentUser?.uid ? `ali_dashboard_${window.currentUser.uid}` : 'ali_dashboard_guest';
+        }
+        function storageKey(name) { return `${getStorageNamespace()}_${name}`; }
+        function safeDashboardWidth(value) {
+            const n = Number(value);
+            const max = Math.max(250, window.innerWidth - 50);
+            return Number.isFinite(n) ? Math.max(250, Math.min(n, max)) : Math.max(300, window.innerWidth * 0.25);
+        }
+        function migrateState(rawCards, rawFolders) {
+            const migratedCards = Array.isArray(rawCards) ? rawCards : [];
+            migratedCards.forEach(card => {
+                if (!card || typeof card !== 'object') return;
+                card.blocks = Array.isArray(card.blocks) ? card.blocks : [];
+                // Flatten legacy multi-page data into a single card. Page functionality is removed.
+                if (Array.isArray(card.pages) && card.pages.length) {
+                    const mergedBlocks = [];
+                    const mergedImages = [];
+                    card.pages.forEach(pg => {
+                        if (pg && Array.isArray(pg.blocks)) mergedBlocks.push(...pg.blocks);
+                        if (pg && Array.isArray(pg.images)) mergedImages.push(...pg.images);
                     });
-                    cards.forEach(c => c.isSynced = true);
-                } else {
-                    cards.forEach(c => c.isSynced = false);
+                    if (mergedBlocks.length) card.blocks = mergedBlocks;
+                    if (mergedImages.length) card.images = mergedImages;
                 }
-            } catch (e) {
-                console.warn("Storage error", e);
-                cards.forEach(c => c.isSynced = false);
-                throw e; // Pass to manualSync
-            } finally {
-                if (window.updateSyncIcons) window.updateSyncIcons();
+                delete card.pages;
+                
+                if (card.definition && String(card.definition).trim()) {
+                    card.blocks.unshift({ type:'text', inline:false, content:String(card.definition) });
+                    delete card.definition;
+                }
+                if (Array.isArray(card.extraNotes)) {
+                    card.extraNotes.forEach(note => card.blocks.push({ type:'text', inline:false, content:String(note ?? '') }));
+                    delete card.extraNotes;
+                }
+                if (Array.isArray(card.bottomImages) && card.bottomImages.length) {
+                    card.blocks.push({ type:'imageGroup', images:[...card.bottomImages] });
+                    delete card.bottomImages;
+                }
+                card.images = Array.isArray(card.images) ? card.images : [];
+                card.isSynced = false;
+            });
+            return { cards:migratedCards, folders:Array.isArray(rawFolders) ? rawFolders : [] };
+        }
+        function serializeForSize(obj) {
+            try { return new Blob([JSON.stringify(obj)]).size; } catch (_) { return Infinity; }
+        }
+        async function loadLocalState() {
+            let savedCards = await localforage.getItem(storageKey('cards'));
+            let savedFolders = await localforage.getItem(storageKey('folders'));
+            // One-time migration from the old shared local cache.
+            if (!savedCards && !savedFolders) {
+                savedCards = await localforage.getItem(LEGACY_CARDS_KEY);
+                savedFolders = await localforage.getItem(LEGACY_FOLDERS_KEY);
+                if (savedCards || savedFolders) {
+                    await localforage.setItem(storageKey('cards'), savedCards || []);
+                    await localforage.setItem(storageKey('folders'), savedFolders || []);
+                }
             }
+            return migrateState(savedCards, savedFolders);
+        }
+
+        async function saveCardsToStorageNow() {
+            const job = async () => {
+                try {
+                    const stamp = Date.now();
+                    localRevision = Math.max(localRevision + 1, stamp);
+                    const payload = { schemaVersion: APP_SCHEMA_VERSION, cards, folders, revision: localRevision, lastUpdatedMs: stamp };
+                    await localforage.setItem(storageKey('cards'), cards);
+                    await localforage.setItem(storageKey('folders'), folders);
+                    await localforage.setItem(storageKey('meta'), { schemaVersion:APP_SCHEMA_VERSION, revision:localRevision, lastUpdatedMs:stamp });
+
+                    if (window.currentUser && window.db && window.fbSetDoc) {
+                        const size = serializeForSize(payload);
+                        if (size > MAX_FIRESTORE_PAYLOAD_BYTES) {
+                            cards.forEach(c => c.isSynced = false);
+                            showToast('Cloud sync skipped: data is too large. Reduce embedded images/audio.');
+                            throw new Error(`Cloud payload too large: ${size} bytes`);
+                        }
+                        await window.fbSetDoc(window.fbDoc(window.db, 'users', window.currentUser.uid), payload);
+                        cards.forEach(c => c.isSynced = true);
+                    } else {
+                        cards.forEach(c => c.isSynced = false);
+                    }
+                } catch (e) {
+                    console.warn('Storage error', e);
+                    cards.forEach(c => c.isSynced = false);
+                    throw e;
+                } finally {
+                    if (window.updateSyncIcons) window.updateSyncIcons();
+                }
+            };
+            saveQueue = saveQueue.then(job, job);
+            return saveQueue;
         }
         const debouncedSave = debounce(saveCardsToStorageNow, 700);
 
@@ -2530,30 +2605,10 @@
                 });
             }
 
-            const fontOptionsContainer = document.getElementById('floatingFontFamilyOptions');
-            if (fontOptionsContainer) {
-                fontOptionsContainer.innerHTML = '';
-                ['Caveat', 'Poppins', 'DM Serif Display', 'Times New Roman'].forEach(f => {
-                    const item = document.createElement('div');
-                    item.className = 'dropdown-item text-gray-700';
-                    item.innerText = f;
-                    item.style.fontFamily = fontMap[f] || 'inherit';
-                    item.onmousedown = (e) => { 
-                        e.preventDefault(); e.stopPropagation(); 
-                        selectFontFamily(f); 
-                        fontOptionsContainer.classList.add('hidden');
-                    };
-                    fontOptionsContainer.appendChild(item);
-                });
-            }
-
             document.getElementById('cardContainer').addEventListener('contextmenu', window.openCardContextMenu);
         }
 
-        function selectFontFamily(font) {
-            currentFontFamily = font;
-            updatePreview();
-        }
+        function selectFontFamily() { currentFontFamily = 'Caveat'; updatePreview(); }
         function selectTextSize(size) { 
             currentSelectedSize = size; 
             const label = document.getElementById('toolbarTitleSizeLabel'); 
@@ -2688,11 +2743,10 @@
             
             document.getElementById('cardContainer').addEventListener('change', (e) => {
                 if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox' && e.target.classList.contains('todo-checkbox')) {
-                    if (e.target.checked) {
-                        e.target.setAttribute('checked', 'checked');
-                    } else {
-                        e.target.removeAttribute('checked');
-                    }
+                    const item = e.target.closest('.todo-item') || e.target.parentElement;
+                    if (item) item.classList.toggle('todo-item-done', e.target.checked);
+                    if (e.target.checked) e.target.setAttribute('checked', 'checked');
+                    else e.target.removeAttribute('checked');
                     
                     const parentBlock = e.target.closest('.card-extra-def-input');
                     if (parentBlock) {
@@ -2706,10 +2760,33 @@
             });
 
             document.getElementById('cardContainer').addEventListener('keydown', (e) => {
-                if (e.target.classList.contains('card-extra-def-input') && e.key === 'Tab') {
-                    e.preventDefault(); document.execCommand('insertText', false, '\t');
-                }
-            });
+                 if (e.target.classList.contains('card-extra-def-input') && e.key === 'Enter') {
+                     const selection = window.getSelection();
+                     const node = selection && selection.rangeCount ? selection.anchorNode : null;
+                     const base = node ? (node.nodeType === 1 ? node : node.parentElement) : null;
+                     const todoItem = base && base.closest ? base.closest('.todo-item') : null;
+                     if (todoItem) {
+                         e.preventDefault();
+                         const newItem = document.createElement('span');
+                         newItem.className = 'todo-item';
+                         newItem.innerHTML = '<input type=\"checkbox\" class=\"todo-checkbox\" aria-label=\"Task checkbox\"> <span class=\"todo-label\"><br></span>';
+                         todoItem.insertAdjacentElement('afterend', newItem);
+                         const label = newItem.querySelector('.todo-label');
+                         const range = document.createRange();
+                         range.selectNodeContents(label);
+                         range.collapse(true);
+                         selection.removeAllRanges();
+                         selection.addRange(range);
+                         const idx = e.target.getAttribute('data-block-idx');
+                         if (idx !== null && activeBlocks[idx]) activeBlocks[idx].content = e.target.innerHTML;
+                         syncCardState();
+                         return;
+                     }
+                 }
+                 if (e.target.classList.contains('card-extra-def-input') && e.key === 'Tab') {
+                     e.preventDefault(); document.execCommand('insertText', false, '\t');
+                 }
+             });
 
             document.getElementById('btnRandomColor').addEventListener('mousedown', (e) => { 
                 e.preventDefault(); e.stopPropagation();
@@ -2810,7 +2887,7 @@
             };
             const doResize = (e) => {
                 if (!isResizingDashboard) return;
-                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientX = e.clientX;
                 let newWidth = clientX; // Left side logic
                 newWidth = Math.max(250, Math.min(newWidth, window.innerWidth - 50)); 
                 currentDashboardWidth = newWidth;
@@ -2833,12 +2910,12 @@
                 }
             };
 
-            resizer.addEventListener('mousedown', startResize);
-            resizer.addEventListener('touchstart', startResize, {passive: true});
-            window.addEventListener('mousemove', doResize);
-            window.addEventListener('touchmove', doResize, {passive: true});
-            window.addEventListener('mouseup', stopResize);
-            window.addEventListener('touchend', stopResize);
+            if (!resizer || resizer.dataset.bound === '1') return;
+            resizer.dataset.bound = '1';
+            resizer.addEventListener('pointerdown', e => { resizer.setPointerCapture?.(e.pointerId); startResize(e); });
+            window.addEventListener('pointermove', doResize);
+            window.addEventListener('pointerup', stopResize);
+            window.addEventListener('pointercancel', stopResize);
         }
 
         function handleImageResizeStart(e, imgIdx, isGroup = false, blockIdx = -1) { 
@@ -3030,16 +3107,33 @@
         }
         function hexToRgba(hex, alpha) { const rgb = hexToRgb(hex); return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`; }
         
-        async function initCards() { 
+        // Mobile keyboard-aware toolbar: keep formatting controls directly above the IME.
+        function updateMobileToolbars() {
+            if (!window.visualViewport || window.innerWidth > 767) return;
+            const vv = window.visualViewport;
+            const viewportBottom = vv.offsetTop + vv.height;
+            document.querySelectorAll('.format-toolbar').forEach(tb => {
+                const h = tb.offsetHeight || 44;
+                const top = Math.max(4, viewportBottom - h - 6);
+                tb.style.bottom = 'auto';
+                tb.style.top = top + 'px';
+                tb.style.transform = 'none';
+            });
+        }
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateMobileToolbars, {passive:true});
+            window.visualViewport.addEventListener('scroll', updateMobileToolbars, {passive:true});
+        }
+        window.addEventListener('resize', updateMobileToolbars, {passive:true});
+        setTimeout(updateMobileToolbars, 100);
+
+        async function initCards() {
             try {
-                const savedCards = await localforage.getItem('ali_dashboard_cards');
-                const savedFolders = await localforage.getItem('ali_dashboard_folders');
-                if (savedFolders) folders = savedFolders;
-                if (savedCards && savedCards.length > 0) {
-                    cards = savedCards; switchCard(cards[0].id); return;
-                }
-            } catch (e) { console.error("Error loading saved cards", e); }
-            createCard(); 
+                const local = await loadLocalState();
+                cards = local.cards; folders = local.folders;
+                if (cards.length > 0) { switchCard(cards[0].id); return; }
+            } catch (e) { console.error('Error loading saved cards', e); }
+            createCard();
         }
 
         async function createCard(useDefaultColor = false, targetFolderId = null) { 
@@ -3089,30 +3183,20 @@
 
             imageUndoStack = []; imageRedoStack = [];
             
-            if (card.extraNotes || card.bottomImages || (card.definition && card.definition.trim() !== '')) {
-                card.blocks = card.blocks || [];
-                if (card.definition && card.definition.trim() !== '') {
-                    card.blocks.unshift({ type: 'text', inline: false, content: card.definition });
-                    delete card.definition;
-                }
-                if (card.extraNotes && card.extraNotes.length > 0) card.extraNotes.forEach(note => card.blocks.push({ type: 'text', inline: false, content: note }));
-                if (card.bottomImages && card.bottomImages.length > 0) card.blocks.push({ type: 'imageGroup', images: [...card.bottomImages] });
-                delete card.extraNotes; delete card.bottomImages;
-            }
-            if (!card.blocks) card.blocks = [];
+            card.blocks = Array.isArray(card.blocks) ? card.blocks : [];
             
             // Per-card dashboard width initialization
             if (card.dashboardWidth) {
                 currentDashboardWidth = card.dashboardWidth;
             } else {
-                currentDashboardWidth = localStorage.getItem('ali_dashboard_width') ? parseInt(localStorage.getItem('ali_dashboard_width')) : Math.max(300, window.innerWidth * 0.25);
+                currentDashboardWidth = safeDashboardWidth(localStorage.getItem('ali_dashboard_width'));
             }
             applyDashboardWidth();
 
             document.getElementById('inputTitle').value = card.title; 
             showTitlePlaceholder = card.showTitlePlaceholder !== false; 
             
-            currentFontFamily = card.fontFamily || 'Caveat';
+            currentFontFamily = 'Caveat';
             
             selectTextSize(card.textSize || 32); selectDefSize(card.defSize || 24); 
             
@@ -3145,7 +3229,7 @@
             card.imageCols = currentImageCols; 
             card.blend = currentBlendPercentage; 
             card.cardBorder = currentCardBorder;
-            card.fontFamily = currentFontFamily;
+            card.fontFamily = 'Caveat'; currentFontFamily = 'Caveat';
             card.showTitlePlaceholder = showTitlePlaceholder; 
             card.dashboardWidth = currentDashboardWidth;
 
@@ -3157,7 +3241,7 @@
                 return block; // Pass by reference for heavy image groups until explicitly saved
             });
             
-            card.images = uploadedImages; 
+            card.images = uploadedImages;
             
             card.isSynced = false;
             if (window.updateSyncIcons) window.updateSyncIcons();
@@ -3368,6 +3452,7 @@
                 closeGroup();
 
                 blocksContainer.innerHTML = blockHTML;
+                normalizeTodoMarkup(blocksContainer);
                 if (primaryInlineContainer) primaryInlineContainer.innerHTML = primaryInlineHTML;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -3426,7 +3511,7 @@
             
             updateFavicon(); 
             
-            const activeFontCss = fontMap[currentFontFamily] || fontMap['Caveat'];
+            const activeFontCss = fontMap['Caveat'];
             
             document.getElementById('dynamic-card-styles').innerHTML = `
                 input[type=range]::-webkit-slider-thumb { background: white !important; border: 3px solid ${finalColor} !important; box-shadow: 0 0 10px ${finalColor}66 !important; } 
@@ -3506,11 +3591,10 @@
                 });
                 
                 syncCardState();
-                const cardState = cards.find(c => c.id === activeCardId);
-                const marker = "\nNOTION_APP_DATA:" + JSON.stringify(cardState);
 
                 canvas.toBlob(blob => {
-                    const finalBlob = new Blob([blob, marker], { type: 'image/png' });
+                    if (!blob) throw new Error('PNG encoding failed');
+                    const finalBlob = blob;
                     const url = URL.createObjectURL(finalBlob);
                     const l = document.createElement('a'); l.download = `${f}.png`; l.href = url; l.click();
                     URL.revokeObjectURL(url);
@@ -3581,10 +3665,7 @@
                 
                 const pdfBlob = await html2pdf().set(opt).from(card).output('blob');
                 syncCardState();
-                const cardState = cards.find(c => c.id === activeCardId);
-                const marker = "\nNOTION_APP_DATA:" + JSON.stringify(cardState);
-                
-                const finalBlob = new Blob([pdfBlob, marker], { type: 'application/pdf' });
+                const finalBlob = pdfBlob;
                 const url = URL.createObjectURL(finalBlob);
                 
                 if (openInNewTab) {
@@ -3907,8 +3988,15 @@
 
         function saveEdState() {
             if (!edTarget.drawC) return;
-            edUndoStack.push(edTarget.drawC.toDataURL());
-            if (edUndoStack.length > 20) edUndoStack.shift(); edRedoStack = [];
+            const maxPixels = 12_000_000;
+            if (edTarget.drawC.width * edTarget.drawC.height > maxPixels) {
+                console.warn('Undo snapshot skipped for oversized canvas');
+                edRedoStack = [];
+                return;
+            }
+            edUndoStack.push(edTarget.drawC.toDataURL('image/webp', 0.82));
+            if (edUndoStack.length > 10) edUndoStack.shift();
+            edRedoStack = [];
         }
 
         function edUndo() {
@@ -3977,36 +4065,62 @@
         };
 
         onAuthStateChanged(window.auth, async (user) => {
-            if (user) {
-                window.currentUser = user;
-                showToast("Welcome, " + user.displayName);
-
-                try {
-                    const docRef = doc(window.db, "users", user.uid);
-                    const docSnap = await getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.cards) { cards = data.cards; cards.forEach(c => c.isSynced = true); }
-                        if (data.folders) { folders = data.folders; }
-                        await localforage.setItem('ali_dashboard_cards', cards);
-                        await localforage.setItem('ali_dashboard_folders', folders);
-                        if(cards.length > 0) {
-                            activeCardId = cards[0].id;
-                            populateHeaderCardsList();
-                            loadCurrentCard();
-                        }
-                    } else {
-                        await setDoc(docRef, { cards: cards, folders: folders, lastUpdated: new Date() });
-                        cards.forEach(c => c.isSynced = true);
-                    }
-                } catch(e) {
-                    console.error("Firebase sync error:", e);
-                } finally {
-                    if (window.updateSyncIcons) window.updateSyncIcons();
-                }
-            } else {
+            if (!user) {
                 window.currentUser = null;
+                if (window.updateSyncIcons) window.updateSyncIcons();
+                return;
+            }
+
+            // Preserve the guest cache before switching to the account namespace.
+            const guestCards = Array.isArray(cards) ? cards : [];
+            const guestFolders = Array.isArray(folders) ? folders : [];
+            const guestMeta = await localforage.getItem(storageKey('meta'));
+            window.currentUser = user;
+            showToast('Welcome, ' + (user.displayName || 'user'));
+
+            try {
+                const docRef = doc(window.db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                const cloud = docSnap.exists() ? docSnap.data() : null;
+                const cloudMs = Number(cloud?.lastUpdatedMs || (cloud?.lastUpdated?.toMillis?.() || 0));
+                const accountMeta = await localforage.getItem(storageKey('meta'));
+                const accountHasData = Array.isArray(accountMeta?.cards) || accountMeta?.revision;
+                const localMs = Number(accountMeta?.lastUpdatedMs || 0);
+
+                if (cloud) {
+                    // Never blindly overwrite a newer local copy.
+                    if (localMs > cloudMs && guestCards.length) {
+                        cards = guestCards; folders = guestFolders;
+                        await saveCardsToStorageNow();
+                    } else {
+                        const migrated = migrateState(cloud.cards, cloud.folders);
+                        cards = migrated.cards; folders = migrated.folders;
+                        cards.forEach(c => c.isSynced = true);
+                        localRevision = Number(cloud.revision || cloudMs || Date.now());
+                        await localforage.setItem(storageKey('cards'), cards);
+                        await localforage.setItem(storageKey('folders'), folders);
+                        await localforage.setItem(storageKey('meta'), { schemaVersion:APP_SCHEMA_VERSION, revision:localRevision, lastUpdatedMs:cloudMs });
+                    }
+                } else if (guestCards.length) {
+                    cards = guestCards; folders = guestFolders;
+                    await saveCardsToStorageNow();
+                } else if (accountHasData) {
+                    const local = await loadLocalState();
+                    cards = local.cards; folders = local.folders;
+                    await saveCardsToStorageNow();
+                } else {
+                    await setDoc(docRef, { schemaVersion:APP_SCHEMA_VERSION, cards:[], folders:[], revision:Date.now(), lastUpdatedMs:Date.now() });
+                }
+
+                if (cards.length > 0) {
+                    activeCardId = cards[0].id;
+                    populateHeaderCardsList();
+                    loadCurrentCard();
+                }
+            } catch(e) {
+                console.error('Firebase sync error:', e);
+                showToast('Cloud sync unavailable; local data is preserved.');
+            } finally {
                 if (window.updateSyncIcons) window.updateSyncIcons();
             }
         });
